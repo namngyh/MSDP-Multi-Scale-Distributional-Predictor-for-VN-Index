@@ -1,58 +1,58 @@
-# MSDP � B? d? b�o ph�n ph?i da thang do cho VN-Index
+# MSDP — Bộ dự báo phân phối đa thang đo cho VN-Index
 
-## T�m t?t nghi�n c?u
+## Tóm tắt nghiên cứu
 
-MSDP d? b�o tr?c ti?p ph�n ph?i l?i su?t VN-Index cho 5, 20 v� 60 phi�n b?ng b?n chuy�n gia causal: ng?n h?n, trung h?n, d�i h?n v� range�volatility. M� h�nh d?ng th?i d? b�o x�c su?t tang, c�c ph�n v? l?i su?t, maximum drawdown, realized volatility, tr?ng s? gate v� m?c b?t d?ng gi?a c�c expert.
+MSDP dự báo trực tiếp phân phối lợi suất VN-Index cho 5, 20 và 60 phiên bằng bốn chuyên gia causal: ngắn hạn, trung hạn, dài hạn và range–volatility. Mô hình đồng thời dự báo xác suất tăng, các phân vị lợi suất, maximum drawdown, realized volatility, trọng số gate và mức bất đồng giữa các expert.
 
-Repository n�y l� ph?n m?m nghi�n c?u, kh�ng ph?i khuy?n ngh? d?u tu. To�n b? s? li?u v� bi?u d? du?i d�y du?c d?c t? artifact c?a `quick` run; kh�ng d�ng s? li?u minh h?a.
+Repository này là phần mềm nghiên cứu, không phải khuyến nghị đầu tư. Toàn bộ số liệu và biểu đồ dưới đây được đọc từ artifact của `quick` run; không dùng số liệu minh họa.
 
-## K?t lu?n ch�nh
+## Kết luận chính
 
-**Trong c?u h�nh v� giai do?n d? li?u hi?n t?i, chua c� b?ng ch?ng cho th?y MSDP vu?t baseline.** H5 v� H20 c� pinball k�m ZeroReturn. H60 c� pinball v� Brier t?t hon nhung MAE k�m hon. M?i CI95 bootstrap c?a ch�nh l?ch MAE d?u ch?a 0. Equal-weight ablation c� pinball trung b�nh th?p hon learned gate.
+**Trong cấu hình và giai đoạn dữ liệu hiện tại, chưa có bằng chứng cho thấy MSDP vượt baseline.** H5 và H20 có pinball kém ZeroReturn. H60 có pinball và Brier tốt hơn nhưng MAE kém hơn. Mọi CI95 bootstrap của chênh lệch MAE đều chứa 0. Equal-weight ablation có pinball trung bình thấp hơn learned gate.
 
-Gi� tr? ch�nh c?a MSDP hi?n n?m ? d? b�o ph�n ph?i v� hi?u ch?nh r?i ro, chua ph?i ? d? b�o di?m.
+Giá trị chính của MSDP hiện nằm ở dự báo phân phối và hiệu chỉnh rủi ro, chưa phải ở dự báo điểm.
 
-## D? li?u v� giao th?c ngo�i m?u
+## Dữ liệu và giao thức ngoài mẫu
 
-- 6306 phi�n, t? 2000-07-28 d?n 2026-07-13.
-- Development/calibration/test theo th?i gian, purge 60 phi�n.
-- Feature selection v� scaler kh�ng d�ng test.
-- CQR fit tr�n ensemble calibration prediction.
-- Final test c� 830 origin d? b�o.
-- Quick run: 201.90 gi�y, 1 seed, 3 Optuna trials, hai ablation v� 50 bootstrap resamples.
+- 6306 phiên, từ 2000-07-28 đến 2026-07-13.
+- Development/calibration/test theo thời gian, purge 60 phiên.
+- Feature selection và scaler không dùng test.
+- CQR fit trên ensemble calibration prediction.
+- Final test có 830 origin dự báo.
+- Quick run: 201.90 giây, 1 seed, 3 Optuna trials, hai ablation và 50 bootstrap resamples.
 
-## Ki?n tr�c v� t�nh d�ng to�n h?c
+## Kiến trúc và tính đúng toán học
 
-- Convolution causal d�ng left padding; kh�ng d�ng symmetric padding.
-- Return head l?y median l�m t�m v� b?o d?m `q05 = q25 = q50 = q75 = q95`.
-- MDD head b?o d?m `q10 = q50 = q90 = 0`; q10 l� k?ch b?n x?u hon.
-- CQR score l� `max(lower-y, y-upper, 0)`; qhat ri�ng horizon v� kh�ng �m.
-- Target scaler ri�ng theo type/horizon; volatility d�ng `log1p` v� Huber loss.
-- Gate nh?n expert latent, learned context v� horizon embedding.
-- Expert disagreement l� d? l?ch chu?n auxiliary return forecast, kh�ng ph?i d? l?ch gate weights.
+- Convolution causal dùng left padding; không dùng symmetric padding.
+- Return head lấy median làm tâm và bảo đảm `q05 ≤ q25 ≤ q50 ≤ q75 ≤ q95`.
+- MDD head bảo đảm `q10 ≤ q50 ≤ q90 ≤ 0`; q10 là kịch bản xấu hơn.
+- CQR score là `max(lower-y, y-upper, 0)`; qhat riêng horizon và không âm.
+- Target scaler riêng theo type/horizon; volatility dùng `log1p` và Huber loss.
+- Gate nhận expert latent, learned context và horizon embedding.
+- Expert disagreement là độ lệch chuẩn auxiliary return forecast, không phải độ lệch gate weights.
 
-## K?t qu? final test
+## Kết quả final test
 
-| Horizon | MAE | Pinball | Brier | Coverage g?c | Coverage conformal | Pinball ? so v?i ZeroReturn |
+| Horizon | MAE | Pinball | Brier | Coverage gốc | Coverage conformal | Pinball Δ so với ZeroReturn |
 |---:|---:|---:|---:|---:|---:|---:|
 | 5 | 2.4054 | 0.7994 | 0.2564 | 76.5% | 91.3% | +0.0530 |
 | 20 | 5.3409 | 1.7225 | 0.2528 | 77.2% | 91.4% | +0.1246 |
 | 60 | 9.2464 | 2.9334 | 0.2488 | 79.8% | 95.5% | +0.1562 |
 
-## D? b�o m?i nh?t
+## Dự báo mới nhất
 
-Ng�y d? li?u: **2026-07-13 00:00:00**; VN-Index: **1800.54**.
+Ngày dữ liệu: **2026-07-13 00:00:00**; VN-Index: **1800.54**.
 
-| Horizon | X�c su?t tang | Median return | Kho?ng conformal |
+| Horizon | Xác suất tăng | Median return | Khoảng conformal |
 |---:|---:|---:|---:|
 | 5 | 48.0% | +0.198% | [-6.608%; +5.519%] |
 | 20 | 51.3% | -0.052% | [-14.652%; +9.647%] |
 | 60 | 52.6% | +0.894% | [-26.885%; +19.935%] |
 
 
-Ba horizon t?o th�nh **h? so d? b�o theo kho?ng th?i gian**, kh�ng ph?i du?ng gi� d? b�o t?ng bu?c.
+Ba horizon tạo thành **hồ sơ dự báo theo khoảng thời gian**, không phải đường giá dự báo từng bước.
 
-## C�i d?t v� l?nh Windows
+## Cài đặt và lệnh Windows
 
 ```powershell
 conda create -n msdp python=3.11 -y
@@ -67,420 +67,420 @@ python scripts/generate_report.py --run latest
 python scripts/update_readme_results.py --run latest
 ```
 
-## H?n ch?
+## Hạn chế
 
-- Artifact hi?n t?i l� quick run m?t seed, chua ph?i default three-seed study.
-- D? li?u ngu?n c� vi ph?m OHLC du?c ghi trong data-quality report.
-- Coverage tang nh? conformal nhung interval d�i h?n r?t r?ng.
-- Gate g?n equal-weight v� chua vu?t equal-weight ablation.
-- Production full retraining v� OOF production calibration chua ho�n t?t.
+- Artifact hiện tại là quick run một seed, chưa phải default three-seed study.
+- Dữ liệu nguồn có vi phạm OHLC được ghi trong data-quality report.
+- Coverage tăng nhờ conformal nhưng interval dài hạn rất rộng.
+- Gate gần equal-weight và chưa vượt equal-weight ablation.
+- Production full retraining và OOF production calibration chưa hoàn tất.
 
-# To�n b? bi?u d? v� nh?n x�t
+# Toàn bộ biểu đồ và nhận xét
 
-## D? li?u
+## Dữ liệu
 
-### L?ch s? di?m d�ng c?a VN-Index
+### Lịch sử điểm đóng cửa VN-Index
 
-![L?ch s? di?m d�ng c?a VN-Index](reports/figures/vnindex_close_history.png)
+![Lịch sử điểm đóng cửa VN-Index](reports/figures/vnindex_close_history.png)
 
-**Nh?n x�t:** Bi?u d? du?c sinh tr?c ti?p t? d? li?u ho?c artifact c?a quick pipeline; kh�ng s? d?ng s? li?u minh h?a gi?.
+**Nhận xét:** Biểu đồ được sinh trực tiếp từ dữ liệu hoặc artifact của quick pipeline; không sử dụng số liệu minh họa giả.
 
-### L?ch s? drawdown VN-Index
+### Lịch sử drawdown VN-Index
 
-![L?ch s? drawdown VN-Index](reports/figures/vnindex_drawdown_history.png)
+![Lịch sử drawdown VN-Index](reports/figures/vnindex_drawdown_history.png)
 
-**Nh?n x�t:** Drawdown l?ch s? th? hi?n c�c giai do?n stress r� r?t. MDD head d� b? ch?n ? mi?n kh�ng duong v� kh�ng di?n gi?i q90 l� k?ch b?n nghi�m tr?ng nh?t.
+**Nhận xét:** Drawdown lịch sử thể hiện các giai đoạn stress rõ rệt. MDD head đã bị chặn ở miền không dương và không diễn giải q90 là kịch bản nghiêm trọng nhất.
 
-### Bi?n d?ng cu?n chi?u
+### Biến động cuốn chiếu
 
-![Bi?n d?ng cu?n chi?u](reports/figures/rolling_volatility.png)
+![Biến động cuốn chiếu](reports/figures/rolling_volatility.png)
 
-**Nh?n x�t:** Volatility MAE l?n lu?t l� 7.08%, 6.19%, 5.44% cho H5/H20/H60. Sai s? gi?m theo horizon nhung v?n d�ng k?.
+**Nhận xét:** Volatility MAE lần lượt là 7.08%, 6.19%, 5.44% cho H5/H20/H60. Sai số giảm theo horizon nhưng vẫn đáng kể.
 
-### Ph�n ph?i l?i su?t ng�y
+### Phân phối lợi suất ngày
 
-![Ph�n ph?i l?i su?t ng�y](reports/figures/return_distribution.png)
+![Phân phối lợi suất ngày](reports/figures/return_distribution.png)
 
-**Nh?n x�t:** Ph�n ph?i l?i su?t c� du�i v� d? ph�n t�n tang theo horizon, l� l� do d�ng quantile regression thay cho gi? d?nh Gaussian c? d?nh.
+**Nhận xét:** Phân phối lợi suất có đuôi và độ phân tán tăng theo horizon, là lý do dùng quantile regression thay cho giả định Gaussian cố định.
 
-### T?ng quan ch?t lu?ng d? li?u
+### Tổng quan chất lượng dữ liệu
 
-![T?ng quan ch?t lu?ng d? li?u](reports/figures/data_quality_overview.png)
+![Tổng quan chất lượng dữ liệu](reports/figures/data_quality_overview.png)
 
-**Nh?n x�t:** C� 6306 phi�n t? 2000-07-28 d?n 2026-07-13. Pipeline ghi nh?n ['OHLC constraint violations: high=27, low=15'] v� kh�ng �m th?m s?a file ngu?n.
+**Nhận xét:** Có 6306 phiên từ 2000-07-28 đến 2026-07-13. Pipeline ghi nhận ['OHLC constraint violations: high=27, low=15'] và không âm thầm sửa file nguồn.
 
-### Ph�n ph?i target theo k? h?n
+### Phân phối target theo kỳ hạn
 
-![Ph�n ph?i target theo k? h?n](reports/figures/target_distribution_by_horizon.png)
+![Phân phối target theo kỳ hạn](reports/figures/target_distribution_by_horizon.png)
 
-**Nh?n x�t:** Ph�n ph?i l?i su?t c� du�i v� d? ph�n t�n tang theo horizon, l� l� do d�ng quantile regression thay cho gi? d?nh Gaussian c? d?nh.
+**Nhận xét:** Phân phối lợi suất có đuôi và độ phân tán tăng theo horizon, là lý do dùng quantile regression thay cho giả định Gaussian cố định.
 
-## Hu?n luy?n
+## Huấn luyện
 
-### T?ng loss hu?n luy?n
+### Tổng loss huấn luyện
 
-![T?ng loss hu?n luy?n](reports/figures/training_total_loss_by_seed.png)
+![Tổng loss huấn luyện](reports/figures/training_total_loss_by_seed.png)
 
-**Nh?n x�t:** Quick run d�ng 1 seed; best epoch l� 1 v?i validation loss 0.3637. M?t seed kh�ng d? d�nh gi� d? ?n d?nh da seed.
+**Nhận xét:** Quick run dùng 1 seed; best epoch là 1 với validation loss 0.3637. Một seed không đủ đánh giá độ ổn định đa seed.
 
-### Loss ph�n v? l?i su?t
+### Loss phân vị lợi suất
 
-![Loss ph�n v? l?i su?t](reports/figures/training_return_loss.png)
+![Loss phân vị lợi suất](reports/figures/training_return_loss.png)
 
-**Nh?n x�t:** Quick run d�ng 1 seed; best epoch l� 1 v?i validation loss 0.3637. M?t seed kh�ng d? d�nh gi� d? ?n d?nh da seed.
+**Nhận xét:** Quick run dùng 1 seed; best epoch là 1 với validation loss 0.3637. Một seed không đủ đánh giá độ ổn định đa seed.
 
-### Loss x�c su?t hu?ng
+### Loss xác suất hướng
 
-![Loss x�c su?t hu?ng](reports/figures/training_direction_loss.png)
+![Loss xác suất hướng](reports/figures/training_direction_loss.png)
 
-**Nh?n x�t:** Quick run d�ng 1 seed; best epoch l� 1 v?i validation loss 0.3637. M?t seed kh�ng d? d�nh gi� d? ?n d?nh da seed.
+**Nhận xét:** Quick run dùng 1 seed; best epoch là 1 với validation loss 0.3637. Một seed không đủ đánh giá độ ổn định đa seed.
 
 ### Loss maximum drawdown
 
 ![Loss maximum drawdown](reports/figures/training_mdd_loss.png)
 
-**Nh?n x�t:** Quick run d�ng 1 seed; best epoch l� 1 v?i validation loss 0.3637. M?t seed kh�ng d? d�nh gi� d? ?n d?nh da seed.
+**Nhận xét:** Quick run dùng 1 seed; best epoch là 1 với validation loss 0.3637. Một seed không đủ đánh giá độ ổn định đa seed.
 
-### Loss bi?n d?ng
+### Loss biến động
 
-![Loss bi?n d?ng](reports/figures/training_volatility_loss.png)
+![Loss biến động](reports/figures/training_volatility_loss.png)
 
-**Nh?n x�t:** Quick run d�ng 1 seed; best epoch l� 1 v?i validation loss 0.3637. M?t seed kh�ng d? d�nh gi� d? ?n d?nh da seed.
+**Nhận xét:** Quick run dùng 1 seed; best epoch là 1 với validation loss 0.3637. Một seed không đủ đánh giá độ ổn định đa seed.
 
-### L?ch s? learning rate
+### Lịch sử learning rate
 
-![L?ch s? learning rate](reports/figures/learning_rate_history.png)
+![Lịch sử learning rate](reports/figures/learning_rate_history.png)
 
-**Nh?n x�t:** Quick run d�ng 1 seed; best epoch l� 1 v?i validation loss 0.3637. M?t seed kh�ng d? d�nh gi� d? ?n d?nh da seed.
+**Nhận xét:** Quick run dùng 1 seed; best epoch là 1 với validation loss 0.3637. Một seed không đủ đánh giá độ ổn định đa seed.
 
-### So s�nh validation gi?a c�c seed
+### So sánh validation giữa các seed
 
-![So s�nh validation gi?a c�c seed](reports/figures/seed_validation_comparison.png)
+![So sánh validation giữa các seed](reports/figures/seed_validation_comparison.png)
 
-**Nh?n x�t:** Quick run d�ng 1 seed; best epoch l� 1 v?i validation loss 0.3637. M?t seed kh�ng d? d�nh gi� d? ?n d?nh da seed.
+**Nhận xét:** Quick run dùng 1 seed; best epoch là 1 với validation loss 0.3637. Một seed không đủ đánh giá độ ổn định đa seed.
 
-## D? b�o l?i su?t
+## Dự báo lợi suất
 
-### L?i su?t d? b�o v� th?c t? � 5 phi�n
+### Lợi suất dự báo và thực tế — 5 phiên
 
-![L?i su?t d? b�o v� th?c t? � 5 phi�n](reports/figures/predicted_vs_actual_return_h5.png)
+![Lợi suất dự báo và thực tế — 5 phiên](reports/figures/predicted_vs_actual_return_h5.png)
 
-**Nh?n x�t:** MAE k? h?n 5 l� 2.405% v� Spearman 0.047. D? b�o trung v? chua b�m s�t m?nh bi?n d?ng th?c t?; m� h�nh ph� h?p hon v?i m� t? ph�n ph?i r?i ro so v?i d? b�o di?m.
+**Nhận xét:** MAE kỳ hạn 5 là 2.405% và Spearman 0.047. Dự báo trung vị chưa bám sát mạnh biến động thực tế; mô hình phù hợp hơn với mô tả phân phối rủi ro so với dự báo điểm.
 
-### Bi?u d? qu?t l?i su?t � 5 phi�n
+### Biểu đồ quạt lợi suất — 5 phiên
 
-![Bi?u d? qu?t l?i su?t � 5 phi�n](reports/figures/return_fan_chart_h5.png)
+![Biểu đồ quạt lợi suất — 5 phiên](reports/figures/return_fan_chart_h5.png)
 
-**Nh?n x�t:** Kho?ng g?c d?t coverage 76.5%. Sau conformal, coverage d?t 91.3%, nhung d? r?ng tang t? 6.78% l�n 10.54%.
+**Nhận xét:** Khoảng gốc đạt coverage 76.5%. Sau conformal, coverage đạt 91.3%, nhưng độ rộng tăng từ 6.78% lên 10.54%.
 
-### Ph?n du l?i su?t � 5 phi�n
+### Phần dư lợi suất — 5 phiên
 
-![Ph?n du l?i su?t � 5 phi�n](reports/figures/residual_return_h5.png)
+![Phần dư lợi suất — 5 phiên](reports/figures/residual_return_h5.png)
 
-**Nh?n x�t:** Ph?n du k? h?n 5 ph?n �nh sai s? d? b�o trung v?; RMSE th?c t? l� 3.143%. C�c c?m sai s? l?n cho th?y ?nh hu?ng c?a regime v� volatility clustering.
+**Nhận xét:** Phần dư kỳ hạn 5 phản ánh sai số dự báo trung vị; RMSE thực tế là 3.143%. Các cụm sai số lớn cho thấy ảnh hưởng của regime và volatility clustering.
 
-### L?i su?t d? b�o v� th?c t? � 20 phi�n
+### Lợi suất dự báo và thực tế — 20 phiên
 
-![L?i su?t d? b�o v� th?c t? � 20 phi�n](reports/figures/predicted_vs_actual_return_h20.png)
+![Lợi suất dự báo và thực tế — 20 phiên](reports/figures/predicted_vs_actual_return_h20.png)
 
-**Nh?n x�t:** MAE k? h?n 20 l� 5.341% v� Spearman 0.069. D? b�o trung v? chua b�m s�t m?nh bi?n d?ng th?c t?; m� h�nh ph� h?p hon v?i m� t? ph�n ph?i r?i ro so v?i d? b�o di?m.
+**Nhận xét:** MAE kỳ hạn 20 là 5.341% và Spearman 0.069. Dự báo trung vị chưa bám sát mạnh biến động thực tế; mô hình phù hợp hơn với mô tả phân phối rủi ro so với dự báo điểm.
 
-### Bi?u d? qu?t l?i su?t � 20 phi�n
+### Biểu đồ quạt lợi suất — 20 phiên
 
-![Bi?u d? qu?t l?i su?t � 20 phi�n](reports/figures/return_fan_chart_h20.png)
+![Biểu đồ quạt lợi suất — 20 phiên](reports/figures/return_fan_chart_h20.png)
 
-**Nh?n x�t:** Kho?ng g?c d?t coverage 77.2%. Sau conformal, coverage d?t 91.4%, nhung d? r?ng tang t? 15.82% l�n 22.62%.
+**Nhận xét:** Khoảng gốc đạt coverage 77.2%. Sau conformal, coverage đạt 91.4%, nhưng độ rộng tăng từ 15.82% lên 22.62%.
 
-### Ph?n du l?i su?t � 20 phi�n
+### Phần dư lợi suất — 20 phiên
 
-![Ph?n du l?i su?t � 20 phi�n](reports/figures/residual_return_h20.png)
+![Phần dư lợi suất — 20 phiên](reports/figures/residual_return_h20.png)
 
-**Nh?n x�t:** Ph?n du k? h?n 20 ph?n �nh sai s? d? b�o trung v?; RMSE th?c t? l� 6.725%. C�c c?m sai s? l?n cho th?y ?nh hu?ng c?a regime v� volatility clustering.
+**Nhận xét:** Phần dư kỳ hạn 20 phản ánh sai số dự báo trung vị; RMSE thực tế là 6.725%. Các cụm sai số lớn cho thấy ảnh hưởng của regime và volatility clustering.
 
-### L?i su?t d? b�o v� th?c t? � 60 phi�n
+### Lợi suất dự báo và thực tế — 60 phiên
 
-![L?i su?t d? b�o v� th?c t? � 60 phi�n](reports/figures/predicted_vs_actual_return_h60.png)
+![Lợi suất dự báo và thực tế — 60 phiên](reports/figures/predicted_vs_actual_return_h60.png)
 
-**Nh?n x�t:** MAE k? h?n 60 l� 9.246% v� Spearman 0.059. D? b�o trung v? chua b�m s�t m?nh bi?n d?ng th?c t?; m� h�nh ph� h?p hon v?i m� t? ph�n ph?i r?i ro so v?i d? b�o di?m.
+**Nhận xét:** MAE kỳ hạn 60 là 9.246% và Spearman 0.059. Dự báo trung vị chưa bám sát mạnh biến động thực tế; mô hình phù hợp hơn với mô tả phân phối rủi ro so với dự báo điểm.
 
-### Bi?u d? qu?t l?i su?t � 60 phi�n
+### Biểu đồ quạt lợi suất — 60 phiên
 
-![Bi?u d? qu?t l?i su?t � 60 phi�n](reports/figures/return_fan_chart_h60.png)
+![Biểu đồ quạt lợi suất — 60 phiên](reports/figures/return_fan_chart_h60.png)
 
-**Nh?n x�t:** Kho?ng g?c d?t coverage 79.8%. Sau conformal, coverage d?t 95.5%, nhung d? r?ng tang t? 31.43% l�n 46.01%.
+**Nhận xét:** Khoảng gốc đạt coverage 79.8%. Sau conformal, coverage đạt 95.5%, nhưng độ rộng tăng từ 31.43% lên 46.01%.
 
-### Ph?n du l?i su?t � 60 phi�n
+### Phần dư lợi suất — 60 phiên
 
-![Ph?n du l?i su?t � 60 phi�n](reports/figures/residual_return_h60.png)
+![Phần dư lợi suất — 60 phiên](reports/figures/residual_return_h60.png)
 
-**Nh?n x�t:** Ph?n du k? h?n 60 ph?n �nh sai s? d? b�o trung v?; RMSE th?c t? l� 11.560%. C�c c?m sai s? l?n cho th?y ?nh hu?ng c?a regime v� volatility clustering.
+**Nhận xét:** Phần dư kỳ hạn 60 phản ánh sai số dự báo trung vị; RMSE thực tế là 11.560%. Các cụm sai số lớn cho thấy ảnh hưởng của regime và volatility clustering.
 
-## Hi?u ch?nh conformal
+## Hiệu chỉnh conformal
 
-### Coverage cu?n chi?u � 5 phi�n
+### Coverage cuốn chiếu — 5 phiên
 
-![Coverage cu?n chi?u � 5 phi�n](reports/figures/rolling_coverage_h5.png)
+![Coverage cuốn chiếu — 5 phiên](reports/figures/rolling_coverage_h5.png)
 
-**Nh?n x�t:** Coverage cu?n chi?u k? h?n 5 kh�ng ?n d?nh tuy?t d?i theo th?i gian. Coverage t?ng th? sau hi?u ch?nh l� 91.3%; d�y l� coverage th?c nghi?m, kh�ng ph?i b?o d?m iid.
+**Nhận xét:** Coverage cuốn chiếu kỳ hạn 5 không ổn định tuyệt đối theo thời gian. Coverage tổng thể sau hiệu chỉnh là 91.3%; đây là coverage thực nghiệm, không phải bảo đảm iid.
 
-### Coverage cu?n chi?u � 20 phi�n
+### Coverage cuốn chiếu — 20 phiên
 
-![Coverage cu?n chi?u � 20 phi�n](reports/figures/rolling_coverage_h20.png)
+![Coverage cuốn chiếu — 20 phiên](reports/figures/rolling_coverage_h20.png)
 
-**Nh?n x�t:** Coverage cu?n chi?u k? h?n 20 kh�ng ?n d?nh tuy?t d?i theo th?i gian. Coverage t?ng th? sau hi?u ch?nh l� 91.4%; d�y l� coverage th?c nghi?m, kh�ng ph?i b?o d?m iid.
+**Nhận xét:** Coverage cuốn chiếu kỳ hạn 20 không ổn định tuyệt đối theo thời gian. Coverage tổng thể sau hiệu chỉnh là 91.4%; đây là coverage thực nghiệm, không phải bảo đảm iid.
 
-### Coverage cu?n chi?u � 60 phi�n
+### Coverage cuốn chiếu — 60 phiên
 
-![Coverage cu?n chi?u � 60 phi�n](reports/figures/rolling_coverage_h60.png)
+![Coverage cuốn chiếu — 60 phiên](reports/figures/rolling_coverage_h60.png)
 
-**Nh?n x�t:** Coverage cu?n chi?u k? h?n 60 kh�ng ?n d?nh tuy?t d?i theo th?i gian. Coverage t?ng th? sau hi?u ch?nh l� 95.5%; d�y l� coverage th?c nghi?m, kh�ng ph?i b?o d?m iid.
+**Nhận xét:** Coverage cuốn chiếu kỳ hạn 60 không ổn định tuyệt đối theo thời gian. Coverage tổng thể sau hiệu chỉnh là 95.5%; đây là coverage thực nghiệm, không phải bảo đảm iid.
 
-### Coverage tru?c v� sau conformal
+### Coverage trước và sau conformal
 
-![Coverage tru?c v� sau conformal](reports/figures/raw_vs_calibrated_coverage.png)
+![Coverage trước và sau conformal](reports/figures/raw_vs_calibrated_coverage.png)
 
-**Nh?n x�t:** Conformal c?i thi?n d? bao ph? nhung l�m kho?ng r?ng hon, d?c bi?t ? k? h?n d�i. Gi� tr? ch�nh l� m� t? b?t d?nh; d? s?c n�t c?a d? b�o gi?m khi y�u c?u coverage cao.
+**Nhận xét:** Conformal cải thiện độ bao phủ nhưng làm khoảng rộng hơn, đặc biệt ở kỳ hạn dài. Giá trị chính là mô tả bất định; độ sắc nét của dự báo giảm khi yêu cầu coverage cao.
 
-### �? r?ng kho?ng theo k? h?n
+### Độ rộng khoảng theo kỳ hạn
 
-![�? r?ng kho?ng theo k? h?n](reports/figures/interval_width_by_horizon.png)
+![Độ rộng khoảng theo kỳ hạn](reports/figures/interval_width_by_horizon.png)
 
-**Nh?n x�t:** Conformal c?i thi?n d? bao ph? nhung l�m kho?ng r?ng hon, d?c bi?t ? k? h?n d�i. Gi� tr? ch�nh l� m� t? b?t d?nh; d? s?c n�t c?a d? b�o gi?m khi y�u c?u coverage cao.
+**Nhận xét:** Conformal cải thiện độ bao phủ nhưng làm khoảng rộng hơn, đặc biệt ở kỳ hạn dài. Giá trị chính là mô tả bất định; độ sắc nét của dự báo giảm khi yêu cầu coverage cao.
 
-### Interval score theo k? h?n
+### Interval score theo kỳ hạn
 
-![Interval score theo k? h?n](reports/figures/interval_score_by_horizon.png)
+![Interval score theo kỳ hạn](reports/figures/interval_score_by_horizon.png)
 
-**Nh?n x�t:** Conformal c?i thi?n d? bao ph? nhung l�m kho?ng r?ng hon, d?c bi?t ? k? h?n d�i. Gi� tr? ch�nh l� m� t? b?t d?nh; d? s?c n�t c?a d? b�o gi?m khi y�u c?u coverage cao.
+**Nhận xét:** Conformal cải thiện độ bao phủ nhưng làm khoảng rộng hơn, đặc biệt ở kỳ hạn dài. Giá trị chính là mô tả bất định; độ sắc nét của dự báo giảm khi yêu cầu coverage cao.
 
-### Coverage theo tr?ng th�i bi?n d?ng
+### Coverage theo trạng thái biến động
 
-![Coverage theo tr?ng th�i bi?n d?ng](reports/figures/conditional_coverage_by_volatility.png)
+![Coverage theo trạng thái biến động](reports/figures/conditional_coverage_by_volatility.png)
 
-**Nh?n x�t:** Conformal c?i thi?n d? bao ph? nhung l�m kho?ng r?ng hon, d?c bi?t ? k? h?n d�i. Gi� tr? ch�nh l� m� t? b?t d?nh; d? s?c n�t c?a d? b�o gi?m khi y�u c?u coverage cao.
+**Nhận xét:** Conformal cải thiện độ bao phủ nhưng làm khoảng rộng hơn, đặc biệt ở kỳ hạn dài. Giá trị chính là mô tả bất định; độ sắc nét của dự báo giảm khi yêu cầu coverage cao.
 
-### So s�nh coverage
+### So sánh coverage
 
-![So s�nh coverage](reports/figures/baseline_interval_coverage_comparison.png)
+![So sánh coverage](reports/figures/baseline_interval_coverage_comparison.png)
 
-**Nh?n x�t:** Conformal c?i thi?n d? bao ph? nhung l�m kho?ng r?ng hon, d?c bi?t ? k? h?n d�i. Gi� tr? ch�nh l� m� t? b?t d?nh; d? s?c n�t c?a d? b�o gi?m khi y�u c?u coverage cao.
+**Nhận xét:** Conformal cải thiện độ bao phủ nhưng làm khoảng rộng hơn, đặc biệt ở kỳ hạn dài. Giá trị chính là mô tả bất định; độ sắc nét của dự báo giảm khi yêu cầu coverage cao.
 
-### So s�nh interval score
+### So sánh interval score
 
-![So s�nh interval score](reports/figures/baseline_interval_score_comparison.png)
+![So sánh interval score](reports/figures/baseline_interval_score_comparison.png)
 
-**Nh?n x�t:** Conformal c?i thi?n d? bao ph? nhung l�m kho?ng r?ng hon, d?c bi?t ? k? h?n d�i. Gi� tr? ch�nh l� m� t? b?t d?nh; d? s?c n�t c?a d? b�o gi?m khi y�u c?u coverage cao.
+**Nhận xét:** Conformal cải thiện độ bao phủ nhưng làm khoảng rộng hơn, đặc biệt ở kỳ hạn dài. Giá trị chính là mô tả bất định; độ sắc nét của dự báo giảm khi yêu cầu coverage cao.
 
-## X�c su?t hu?ng
+## Xác suất hướng
 
-### �? tin c?y x�c su?t hu?ng � 5 phi�n
+### Độ tin cậy xác suất hướng — 5 phiên
 
-![�? tin c?y x�c su?t hu?ng � 5 phi�n](reports/figures/direction_reliability_h5.png)
+![Độ tin cậy xác suất hướng — 5 phiên](reports/figures/direction_reliability_h5.png)
 
-**Nh?n x�t:** Brier score k? h?n 5 l� 0.2564, ROC AUC 0.533. X�c su?t c� th�ng tin h?n ch? v� chua t?o ph�n t�ch l?p m?nh.
+**Nhận xét:** Brier score kỳ hạn 5 là 0.2564, ROC AUC 0.533. Xác suất có thông tin hạn chế và chưa tạo phân tách lớp mạnh.
 
-### �? tin c?y x�c su?t hu?ng � 20 phi�n
+### Độ tin cậy xác suất hướng — 20 phiên
 
-![�? tin c?y x�c su?t hu?ng � 20 phi�n](reports/figures/direction_reliability_h20.png)
+![Độ tin cậy xác suất hướng — 20 phiên](reports/figures/direction_reliability_h20.png)
 
-**Nh?n x�t:** Brier score k? h?n 20 l� 0.2528, ROC AUC 0.545. X�c su?t c� th�ng tin h?n ch? v� chua t?o ph�n t�ch l?p m?nh.
+**Nhận xét:** Brier score kỳ hạn 20 là 0.2528, ROC AUC 0.545. Xác suất có thông tin hạn chế và chưa tạo phân tách lớp mạnh.
 
-### �? tin c?y x�c su?t hu?ng � 60 phi�n
+### Độ tin cậy xác suất hướng — 60 phiên
 
-![�? tin c?y x�c su?t hu?ng � 60 phi�n](reports/figures/direction_reliability_h60.png)
+![Độ tin cậy xác suất hướng — 60 phiên](reports/figures/direction_reliability_h60.png)
 
-**Nh?n x�t:** Brier score k? h?n 60 l� 0.2488, ROC AUC 0.525. X�c su?t c� th�ng tin h?n ch? v� chua t?o ph�n t�ch l?p m?nh.
+**Nhận xét:** Brier score kỳ hạn 60 là 0.2488, ROC AUC 0.525. Xác suất có thông tin hạn chế và chưa tạo phân tách lớp mạnh.
 
-### X�c su?t tang v� k?t qu? th?c t?
+### Xác suất tăng và kết quả thực tế
 
-![X�c su?t tang v� k?t qu? th?c t?](reports/figures/direction_probability_vs_actual.png)
+![Xác suất tăng và kết quả thực tế](reports/figures/direction_probability_vs_actual.png)
 
-**Nh?n x�t:** Brier gi?m so v?i ZeroReturn ? c? ba k? h?n, nhung balanced accuracy v?n g?n v�ng 0,5. Kh�ng n�n di?n gi?i x�c su?t tang nhu t�n hi?u giao d?ch ch?c ch?n.
+**Nhận xét:** Brier giảm so với ZeroReturn ở cả ba kỳ hạn, nhưng balanced accuracy vẫn gần vùng 0,5. Không nên diễn giải xác suất tăng như tín hiệu giao dịch chắc chắn.
 
-### Brier score theo k? h?n
+### Brier score theo kỳ hạn
 
-![Brier score theo k? h?n](reports/figures/brier_score_by_horizon.png)
+![Brier score theo kỳ hạn](reports/figures/brier_score_by_horizon.png)
 
-**Nh?n x�t:** Brier gi?m so v?i ZeroReturn ? c? ba k? h?n, nhung balanced accuracy v?n g?n v�ng 0,5. Kh�ng n�n di?n gi?i x�c su?t tang nhu t�n hi?u giao d?ch ch?c ch?n.
+**Nhận xét:** Brier giảm so với ZeroReturn ở cả ba kỳ hạn, nhưng balanced accuracy vẫn gần vùng 0,5. Không nên diễn giải xác suất tăng như tín hiệu giao dịch chắc chắn.
 
-### So s�nh Brier v?i baseline
+### So sánh Brier với baseline
 
-![So s�nh Brier v?i baseline](reports/figures/baseline_direction_brier_comparison.png)
+![So sánh Brier với baseline](reports/figures/baseline_direction_brier_comparison.png)
 
-**Nh?n x�t:** Brier gi?m so v?i ZeroReturn ? c? ba k? h?n, nhung balanced accuracy v?n g?n v�ng 0,5. Kh�ng n�n di?n gi?i x�c su?t tang nhu t�n hi?u giao d?ch ch?c ch?n.
+**Nhận xét:** Brier giảm so với ZeroReturn ở cả ba kỳ hạn, nhưng balanced accuracy vẫn gần vùng 0,5. Không nên diễn giải xác suất tăng như tín hiệu giao dịch chắc chắn.
 
-## Expert v� gate
+## Expert và gate
 
-### Tr?ng s? gate � 5 phi�n
+### Trọng số gate — 5 phiên
 
-![Tr?ng s? gate � 5 phi�n](reports/figures/gate_weights_h5.png)
+![Trọng số gate — 5 phiên](reports/figures/gate_weights_h5.png)
 
-**Nh?n x�t:** Expert c� tr?ng s? trung b�nh cao nh?t l� `medium` (0.314). K?t qu? chua h? tr? gi? thuy?t short expert chi ph?i k? h?n 5 phi�n.
+**Nhận xét:** Expert có trọng số trung bình cao nhất là `medium` (0.314). Kết quả chưa hỗ trợ giả thuyết short expert chi phối kỳ hạn 5 phiên.
 
-### D? b�o ri�ng t?ng expert � 5 phi�n
+### Dự báo riêng từng expert — 5 phiên
 
-![D? b�o ri�ng t?ng expert � 5 phi�n](reports/figures/expert_predictions_h5.png)
+![Dự báo riêng từng expert — 5 phiên](reports/figures/expert_predictions_h5.png)
 
-**Nh?n x�t:** �? l?ch chu?n trung b�nh gi?a auxiliary expert forecasts ? k? h?n 5 l� 0.436%. ��y l� b?t d?ng d? b�o, kh�c v?i entropy c?a tr?ng s? gate.
+**Nhận xét:** Độ lệch chuẩn trung bình giữa auxiliary expert forecasts ở kỳ hạn 5 là 0.436%. Đây là bất đồng dự báo, khác với entropy của trọng số gate.
 
-### Tr?ng s? gate � 20 phi�n
+### Trọng số gate — 20 phiên
 
-![Tr?ng s? gate � 20 phi�n](reports/figures/gate_weights_h20.png)
+![Trọng số gate — 20 phiên](reports/figures/gate_weights_h20.png)
 
-**Nh?n x�t:** Expert c� tr?ng s? trung b�nh cao nh?t l� `medium` (0.321). Long expert tang vai tr� ? k? h?n d�i, nhung m?c ph�n h�a gate v?n tuong d?i th?p.
+**Nhận xét:** Expert có trọng số trung bình cao nhất là `medium` (0.321). Long expert tăng vai trò ở kỳ hạn dài, nhưng mức phân hóa gate vẫn tương đối thấp.
 
-### D? b�o ri�ng t?ng expert � 20 phi�n
+### Dự báo riêng từng expert — 20 phiên
 
-![D? b�o ri�ng t?ng expert � 20 phi�n](reports/figures/expert_predictions_h20.png)
+![Dự báo riêng từng expert — 20 phiên](reports/figures/expert_predictions_h20.png)
 
-**Nh?n x�t:** �? l?ch chu?n trung b�nh gi?a auxiliary expert forecasts ? k? h?n 20 l� 0.901%. ��y l� b?t d?ng d? b�o, kh�c v?i entropy c?a tr?ng s? gate.
+**Nhận xét:** Độ lệch chuẩn trung bình giữa auxiliary expert forecasts ở kỳ hạn 20 là 0.901%. Đây là bất đồng dự báo, khác với entropy của trọng số gate.
 
-### Tr?ng s? gate � 60 phi�n
+### Trọng số gate — 60 phiên
 
-![Tr?ng s? gate � 60 phi�n](reports/figures/gate_weights_h60.png)
+![Trọng số gate — 60 phiên](reports/figures/gate_weights_h60.png)
 
-**Nh?n x�t:** Expert c� tr?ng s? trung b�nh cao nh?t l� `long` (0.313). Long expert tang vai tr� ? k? h?n d�i, nhung m?c ph�n h�a gate v?n tuong d?i th?p.
+**Nhận xét:** Expert có trọng số trung bình cao nhất là `long` (0.313). Long expert tăng vai trò ở kỳ hạn dài, nhưng mức phân hóa gate vẫn tương đối thấp.
 
-### D? b�o ri�ng t?ng expert � 60 phi�n
+### Dự báo riêng từng expert — 60 phiên
 
-![D? b�o ri�ng t?ng expert � 60 phi�n](reports/figures/expert_predictions_h60.png)
+![Dự báo riêng từng expert — 60 phiên](reports/figures/expert_predictions_h60.png)
 
-**Nh?n x�t:** �? l?ch chu?n trung b�nh gi?a auxiliary expert forecasts ? k? h?n 60 l� 1.575%. ��y l� b?t d?ng d? b�o, kh�c v?i entropy c?a tr?ng s? gate.
+**Nhận xét:** Độ lệch chuẩn trung bình giữa auxiliary expert forecasts ở kỳ hạn 60 là 1.575%. Đây là bất đồng dự báo, khác với entropy của trọng số gate.
 
-### Tr?ng s? gate trung b�nh
+### Trọng số gate trung bình
 
-![Tr?ng s? gate trung b�nh](reports/figures/mean_gate_weights_by_horizon.png)
+![Trọng số gate trung bình](reports/figures/mean_gate_weights_by_horizon.png)
 
-**Nh?n x�t:** Gate c� xu hu?ng g?n tr?ng s? d?u; long expert nh?n tr?ng s? cao nh?t ? c? ba k? h?n. Learned gate chua ch?ng minh gi� tr? vu?t equal-weight trong quick ablation.
+**Nhận xét:** Gate có xu hướng gần trọng số đều; long expert nhận trọng số cao nhất ở cả ba kỳ hạn. Learned gate chưa chứng minh giá trị vượt equal-weight trong quick ablation.
 
-### Entropy gate chu?n h�a
+### Entropy gate chuẩn hóa
 
-![Entropy gate chu?n h�a](reports/figures/gate_entropy_by_horizon.png)
+![Entropy gate chuẩn hóa](reports/figures/gate_entropy_by_horizon.png)
 
-**Nh?n x�t:** Gate c� xu hu?ng g?n tr?ng s? d?u; long expert nh?n tr?ng s? cao nh?t ? c? ba k? h?n. Learned gate chua ch?ng minh gi� tr? vu?t equal-weight trong quick ablation.
+**Nhận xét:** Gate có xu hướng gần trọng số đều; long expert nhận trọng số cao nhất ở cả ba kỳ hạn. Learned gate chưa chứng minh giá trị vượt equal-weight trong quick ablation.
 
-### M?c b?t d?ng gi?a c�c expert
+### Mức bất đồng giữa các expert
 
-![M?c b?t d?ng gi?a c�c expert](reports/figures/expert_disagreement.png)
+![Mức bất đồng giữa các expert](reports/figures/expert_disagreement.png)
 
-**Nh?n x�t:** Gate c� xu hu?ng g?n tr?ng s? d?u; long expert nh?n tr?ng s? cao nh?t ? c? ba k? h?n. Learned gate chua ch?ng minh gi� tr? vu?t equal-weight trong quick ablation.
+**Nhận xét:** Gate có xu hướng gần trọng số đều; long expert nhận trọng số cao nhất ở cả ba kỳ hạn. Learned gate chưa chứng minh giá trị vượt equal-weight trong quick ablation.
 
-### Tuong quan d? b�o gi?a c�c expert
+### Tương quan dự báo giữa các expert
 
-![Tuong quan d? b�o gi?a c�c expert](reports/figures/expert_latent_correlation.png)
+![Tương quan dự báo giữa các expert](reports/figures/expert_latent_correlation.png)
 
-**Nh?n x�t:** Gate c� xu hu?ng g?n tr?ng s? d?u; long expert nh?n tr?ng s? cao nh?t ? c? ba k? h?n. Learned gate chua ch?ng minh gi� tr? vu?t equal-weight trong quick ablation.
+**Nhận xét:** Gate có xu hướng gần trọng số đều; long expert nhận trọng số cao nhất ở cả ba kỳ hạn. Learned gate chưa chứng minh giá trị vượt equal-weight trong quick ablation.
 
-### M?c s? d?ng expert
+### Mức sử dụng expert
 
-![M?c s? d?ng expert](reports/figures/expert_usage_by_market_condition.png)
+![Mức sử dụng expert](reports/figures/expert_usage_by_market_condition.png)
 
-**Nh?n x�t:** Gate c� xu hu?ng g?n tr?ng s? d?u; long expert nh?n tr?ng s? cao nh?t ? c? ba k? h?n. Learned gate chua ch?ng minh gi� tr? vu?t equal-weight trong quick ablation.
+**Nhận xét:** Gate có xu hướng gần trọng số đều; long expert nhận trọng số cao nhất ở cả ba kỳ hạn. Learned gate chưa chứng minh giá trị vượt equal-weight trong quick ablation.
 
-### Gate m?i nh?t
+### Gate mới nhất
 
-![Gate m?i nh?t](reports/figures/latest_gate_weights.png)
+![Gate mới nhất](reports/figures/latest_gate_weights.png)
 
-**Nh?n x�t:** Gate c� xu hu?ng g?n tr?ng s? d?u; long expert nh?n tr?ng s? cao nh?t ? c? ba k? h?n. Learned gate chua ch?ng minh gi� tr? vu?t equal-weight trong quick ablation.
+**Nhận xét:** Gate có xu hướng gần trọng số đều; long expert nhận trọng số cao nhất ở cả ba kỳ hạn. Learned gate chưa chứng minh giá trị vượt equal-weight trong quick ablation.
 
-## R?i ro
+## Rủi ro
 
-### MDD d? b�o v� th?c t? � 5 phi�n
+### MDD dự báo và thực tế — 5 phiên
 
-![MDD d? b�o v� th?c t? � 5 phi�n](reports/figures/predicted_vs_actual_mdd_h5.png)
+![MDD dự báo và thực tế — 5 phiên](reports/figures/predicted_vs_actual_mdd_h5.png)
 
-**Nh?n x�t:** MDD MAE k? h?n 5 l� 1.528%. q10 bi?u di?n k?ch b?n drawdown x?u hon, c�n q90 g?n 0 hon; to�n b? quantile d� du?c audit kh�ng duong.
+**Nhận xét:** MDD MAE kỳ hạn 5 là 1.528%. q10 biểu diễn kịch bản drawdown xấu hơn, còn q90 gần 0 hơn; toàn bộ quantile đã được audit không dương.
 
-### MDD d? b�o v� th?c t? � 20 phi�n
+### MDD dự báo và thực tế — 20 phiên
 
-![MDD d? b�o v� th?c t? � 20 phi�n](reports/figures/predicted_vs_actual_mdd_h20.png)
+![MDD dự báo và thực tế — 20 phiên](reports/figures/predicted_vs_actual_mdd_h20.png)
 
-**Nh?n x�t:** MDD MAE k? h?n 20 l� 3.149%. q10 bi?u di?n k?ch b?n drawdown x?u hon, c�n q90 g?n 0 hon; to�n b? quantile d� du?c audit kh�ng duong.
+**Nhận xét:** MDD MAE kỳ hạn 20 là 3.149%. q10 biểu diễn kịch bản drawdown xấu hơn, còn q90 gần 0 hơn; toàn bộ quantile đã được audit không dương.
 
-### MDD d? b�o v� th?c t? � 60 phi�n
+### MDD dự báo và thực tế — 60 phiên
 
-![MDD d? b�o v� th?c t? � 60 phi�n](reports/figures/predicted_vs_actual_mdd_h60.png)
+![MDD dự báo và thực tế — 60 phiên](reports/figures/predicted_vs_actual_mdd_h60.png)
 
-**Nh?n x�t:** MDD MAE k? h?n 60 l� 4.985%. q10 bi?u di?n k?ch b?n drawdown x?u hon, c�n q90 g?n 0 hon; to�n b? quantile d� du?c audit kh�ng duong.
+**Nhận xét:** MDD MAE kỳ hạn 60 là 4.985%. q10 biểu diễn kịch bản drawdown xấu hơn, còn q90 gần 0 hơn; toàn bộ quantile đã được audit không dương.
 
-### Bi?n d?ng d? b�o v� th?c t?
+### Biến động dự báo và thực tế
 
-![Bi?n d?ng d? b�o v� th?c t?](reports/figures/predicted_vs_actual_volatility.png)
+![Biến động dự báo và thực tế](reports/figures/predicted_vs_actual_volatility.png)
 
-**Nh?n x�t:** Volatility MAE l?n lu?t l� 7.08%, 6.19%, 5.44% cho H5/H20/H60. Sai s? gi?m theo horizon nhung v?n d�ng k?.
+**Nhận xét:** Volatility MAE lần lượt là 7.08%, 6.19%, 5.44% cho H5/H20/H60. Sai số giảm theo horizon nhưng vẫn đáng kể.
 
-### T?n su?t vu?t ngu?ng MDD
+### Tần suất vượt ngưỡng MDD
 
-![T?n su?t vu?t ngu?ng MDD](reports/figures/mdd_threshold_calibration.png)
+![Tần suất vượt ngưỡng MDD](reports/figures/mdd_threshold_calibration.png)
 
-**Nh?n x�t:** Drawdown l?ch s? th? hi?n c�c giai do?n stress r� r?t. MDD head d� b? ch?n ? mi?n kh�ng duong v� kh�ng di?n gi?i q90 l� k?ch b?n nghi�m tr?ng nh?t.
+**Nhận xét:** Drawdown lịch sử thể hiện các giai đoạn stress rõ rệt. MDD head đã bị chặn ở miền không dương và không diễn giải q90 là kịch bản nghiêm trọng nhất.
 
-## So s�nh m� h�nh
+## So sánh mô hình
 
-### So s�nh pinball v?i baseline
+### So sánh pinball với baseline
 
-![So s�nh pinball v?i baseline](reports/figures/baseline_return_pinball_comparison.png)
+![So sánh pinball với baseline](reports/figures/baseline_return_pinball_comparison.png)
 
-**Nh?n x�t:** H5 v� H20 c� pinball k�m ZeroReturn; H60 c� pinball t?t hon nhung MAE k�m hon. Kh�ng c� c?i thi?n nh?t qu�n tr�n m?i metric v� horizon.
+**Nhận xét:** H5 và H20 có pinball kém ZeroReturn; H60 có pinball tốt hơn nhưng MAE kém hơn. Không có cải thiện nhất quán trên mọi metric và horizon.
 
-### K?t qu? ablation
+### Kết quả ablation
 
-![K?t qu? ablation](reports/figures/ablation_comparison.png)
+![Kết quả ablation](reports/figures/ablation_comparison.png)
 
-**Nh?n x�t:** Equal-weight d?t mean pinball 1.9507, th?p hon Full MSDP kho?ng 1.8184; single-scale d?t 1.6853. Learned gate chua vu?t equal-weight.
+**Nhận xét:** Equal-weight đạt mean pinball 1.9507, thấp hơn Full MSDP khoảng 1.8184; single-scale đạt 1.6853. Learned gate chưa vượt equal-weight.
 
-### Kho?ng tin c?y bootstrap
+### Khoảng tin cậy bootstrap
 
-![Kho?ng tin c?y bootstrap](reports/figures/bootstrap_confidence_intervals.png)
+![Khoảng tin cậy bootstrap](reports/figures/bootstrap_confidence_intervals.png)
 
-**Nh?n x�t:** Conformal c?i thi?n d? bao ph? nhung l�m kho?ng r?ng hon, d?c bi?t ? k? h?n d�i. Gi� tr? ch�nh l� m� t? b?t d?nh; d? s?c n�t c?a d? b�o gi?m khi y�u c?u coverage cao.
+**Nhận xét:** Conformal cải thiện độ bao phủ nhưng làm khoảng rộng hơn, đặc biệt ở kỳ hạn dài. Giá trị chính là mô tả bất định; độ sắc nét của dự báo giảm khi yêu cầu coverage cao.
 
-### Hi?u nang theo di?u ki?n th? tru?ng
+### Hiệu năng theo điều kiện thị trường
 
-![Hi?u nang theo di?u ki?n th? tru?ng](reports/figures/performance_by_market_condition.png)
+![Hiệu năng theo điều kiện thị trường](reports/figures/performance_by_market_condition.png)
 
-**Nh?n x�t:** Bi?u d? du?c sinh tr?c ti?p t? d? li?u ho?c artifact c?a quick pipeline; kh�ng s? d?ng s? li?u minh h?a gi?.
+**Nhận xét:** Biểu đồ được sinh trực tiếp từ dữ liệu hoặc artifact của quick pipeline; không sử dụng số liệu minh họa giả.
 
-### �? ?n d?nh theo seed
+### Độ ổn định theo seed
 
-![�? ?n d?nh theo seed](reports/figures/seed_stability.png)
+![Độ ổn định theo seed](reports/figures/seed_stability.png)
 
-**Nh?n x�t:** Quick run d�ng 1 seed; best epoch l� 1 v?i validation loss 0.3637. M?t seed kh�ng d? d�nh gi� d? ?n d?nh da seed.
+**Nhận xét:** Quick run dùng 1 seed; best epoch là 1 với validation loss 0.3637. Một seed không đủ đánh giá độ ổn định đa seed.
 
-## D? b�o m?i nh?t
+## Dự báo mới nhất
 
-### H? so l?i su?t m?i nh?t
+### Hồ sơ lợi suất mới nhất
 
-![H? so l?i su?t m?i nh?t](reports/figures/latest_horizon_return_profile.png)
+![Hồ sơ lợi suất mới nhất](reports/figures/latest_horizon_return_profile.png)
 
-**Nh?n x�t:** H? so ng�y 2026-07-13 00:00:00 cho th?y median return duong ? c? ba horizon, nhung calibrated interval d?u bao g?m 0 v� m? r?ng m?nh theo k? h?n. ��y kh�ng ph?i du?ng gi� tuong lai hay khuy?n ngh? mua b�n.
+**Nhận xét:** Hồ sơ ngày 2026-07-13 00:00:00 cho thấy median return dương ở cả ba horizon, nhưng calibrated interval đều bao gồm 0 và mở rộng mạnh theo kỳ hạn. Đây không phải đường giá tương lai hay khuyến nghị mua bán.
 
-### Kho?ng ch? s? d? ph�ng m?i nh?t
+### Khoảng chỉ số dự phóng mới nhất
 
-![Kho?ng ch? s? d? ph�ng m?i nh?t](reports/figures/latest_projected_index_interval.png)
+![Khoảng chỉ số dự phóng mới nhất](reports/figures/latest_projected_index_interval.png)
 
-**Nh?n x�t:** Conformal c?i thi?n d? bao ph? nhung l�m kho?ng r?ng hon, d?c bi?t ? k? h?n d�i. Gi� tr? ch�nh l� m� t? b?t d?nh; d? s?c n�t c?a d? b�o gi?m khi y�u c?u coverage cao.
+**Nhận xét:** Conformal cải thiện độ bao phủ nhưng làm khoảng rộng hơn, đặc biệt ở kỳ hạn dài. Giá trị chính là mô tả bất định; độ sắc nét của dự báo giảm khi yêu cầu coverage cao.
 
-### H? so r?i ro m?i nh?t
+### Hồ sơ rủi ro mới nhất
 
-![H? so r?i ro m?i nh?t](reports/figures/latest_risk_profile.png)
+![Hồ sơ rủi ro mới nhất](reports/figures/latest_risk_profile.png)
 
-**Nh?n x�t:** H? so ng�y 2026-07-13 00:00:00 cho th?y median return duong ? c? ba horizon, nhung calibrated interval d?u bao g?m 0 v� m? r?ng m?nh theo k? h?n. ��y kh�ng ph?i du?ng gi� tuong lai hay khuy?n ngh? mua b�n.
+**Nhận xét:** Hồ sơ ngày 2026-07-13 00:00:00 cho thấy median return dương ở cả ba horizon, nhưng calibrated interval đều bao gồm 0 và mở rộng mạnh theo kỳ hạn. Đây không phải đường giá tương lai hay khuyến nghị mua bán.
 
-### C�c th�nh ph?n confidence m?i nh?t
+### Các thành phần confidence mới nhất
 
-![C�c th�nh ph?n confidence m?i nh?t](reports/figures/latest_confidence_components.png)
+![Các thành phần confidence mới nhất](reports/figures/latest_confidence_components.png)
 
-**Nh?n x�t:** H? so ng�y 2026-07-13 00:00:00 cho th?y median return duong ? c? ba horizon, nhung calibrated interval d?u bao g?m 0 v� m? r?ng m?nh theo k? h?n. ��y kh�ng ph?i du?ng gi� tuong lai hay khuy?n ngh? mua b�n.
+**Nhận xét:** Hồ sơ ngày 2026-07-13 00:00:00 cho thấy median return dương ở cả ba horizon, nhưng calibrated interval đều bao gồm 0 và mở rộng mạnh theo kỳ hạn. Đây không phải đường giá tương lai hay khuyến nghị mua bán.
 
-## T�i li?u chi ti?t
+## Tài liệu chi tiết
 
-- [B�o c�o nghi�n c?u d?y d?](reports/MSDP_BAO_CAO_DAY_DU_VI.md)
-- [Nh?n x�t k?t qu?](reports/MSDP_NHAN_XET_KET_QUA_VI.md)
+- [Báo cáo nghiên cứu đầy đủ](reports/MSDP_BAO_CAO_DAY_DU_VI.md)
+- [Nhận xét kết quả](reports/MSDP_NHAN_XET_KET_QUA_VI.md)
 - [Review repository](reports/MSDP_REPOSITORY_REVIEW_VI.md)
-- [K?t qu? ki?m th?](reports/test_results.txt)
-- [H?n ch?](reports/MSDP_LIMITATIONS_VI.md)
+- [Kết quả kiểm thử](reports/test_results.txt)
+- [Hạn chế](reports/MSDP_LIMITATIONS_VI.md)
 
-## Tuy�n b? mi?n tr? tr�ch nhi?m
+## Tuyên bố miễn trừ trách nhiệm
 
-Kh�ng s? d?ng k?t qu? nhu b?o d?m l?i nhu?n ho?c l?i khuy�n mua b�n. Ngu?i d�ng t? ch?u tr�ch nhi?m ki?m tra d? li?u, gi? d?nh, chi ph� giao d?ch v� r?i ro th? tru?ng.
+Không sử dụng kết quả như bảo đảm lợi nhuận hoặc lời khuyên mua bán. Người dùng tự chịu trách nhiệm kiểm tra dữ liệu, giả định, chi phí giao dịch và rủi ro thị trường.
