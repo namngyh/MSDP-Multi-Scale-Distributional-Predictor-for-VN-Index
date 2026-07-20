@@ -1,17 +1,22 @@
 """Sinh toàn bộ README tiếng Việt từ artifact thực tế của pipeline."""
 from pathlib import Path
-import argparse,json
+import argparse,json,subprocess
 import numpy as np
 import pandas as pd
 
 ROOT=Path(__file__).resolve().parents[1]
-p=argparse.ArgumentParser(); p.add_argument("--run",default="latest"); args=p.parse_args()
-metrics=json.loads((ROOT/"reports/tables/final_metrics.json").read_text(encoding="utf-8")); baseline=json.loads((ROOT/"reports/tables/baseline_metrics.json").read_text(encoding="utf-8")); bootstrap=json.loads((ROOT/"reports/tables/bootstrap_results.json").read_text(encoding="utf-8")); ablations=json.loads((ROOT/"reports/tables/ablation_results.json").read_text(encoding="utf-8")); seeds=json.loads((ROOT/"reports/tables/seed_results.json").read_text(encoding="utf-8")); quality=json.loads((ROOT/"reports/tables/data_quality.json").read_text(encoding="utf-8")); latest=json.loads((ROOT/"artifacts/predictions/latest_forecast.json").read_text(encoding="utf-8")); summary=json.loads((ROOT/"artifacts/run_summary.json").read_text(encoding="utf-8")); pred=pd.read_csv(ROOT/"artifacts/predictions/test_predictions.csv"); manifest=json.loads((ROOT/"reports/figures/figure_manifest.json").read_text(encoding="utf-8")); hs=[5,20,60]
+p=argparse.ArgumentParser(); p.add_argument("--run-id",required=True); args=p.parse_args()
+metrics=json.loads((ROOT/"reports/tables/final_metrics.json").read_text(encoding="utf-8")); baseline=json.loads((ROOT/"reports/tables/baseline_metrics.json").read_text(encoding="utf-8")); bootstrap=json.loads((ROOT/"reports/tables/bootstrap_results.json").read_text(encoding="utf-8")); ablations=json.loads((ROOT/"reports/tables/ablation_results.json").read_text(encoding="utf-8")); seeds=json.loads((ROOT/"reports/tables/seed_results.json").read_text(encoding="utf-8")); quality=json.loads((ROOT/"reports/tables/data_quality.json").read_text(encoding="utf-8")); latest=json.loads((ROOT/"artifacts/predictions/latest_forecast.json").read_text(encoding="utf-8")); summary=json.loads((ROOT/"artifacts/runs"/args.run_id/"run_summary.json").read_text(encoding="utf-8")); pred=pd.read_csv(ROOT/"artifacts/predictions/test_predictions.csv"); manifest=json.loads((ROOT/"reports/figures/figure_manifest.json").read_text(encoding="utf-8")); hs=[5,20,60]
+production=json.loads((ROOT/"artifacts/models"/args.run_id/"production_ensemble_manifest.json").read_text(encoding="utf-8"))
+if summary.get("run_id")!=args.run_id or latest.get("run_id")!=args.run_id or production.get("run_id")!=args.run_id: raise SystemExit("Run ID không đồng bộ giữa summary, latest và production manifest")
+current_commit=subprocess.check_output(["git","rev-parse","HEAD"],text=True).strip()
+if production.get("git_commit")!=current_commit: raise SystemExit(f"Artifact commit {production.get('git_commit')} khác current HEAD {current_commit}")
 
 titles={
 "data_quality_overview.png":"Tổng quan chất lượng dữ liệu","vnindex_close_history.png":"Lịch sử điểm đóng cửa VN-Index","vnindex_drawdown_history.png":"Lịch sử drawdown VN-Index","return_distribution.png":"Phân phối lợi suất ngày","rolling_volatility.png":"Biến động cuốn chiếu","target_distribution_by_horizon.png":"Phân phối target theo kỳ hạn","training_total_loss_by_seed.png":"Tổng loss huấn luyện","training_return_loss.png":"Loss phân vị lợi suất","training_direction_loss.png":"Loss xác suất hướng","training_mdd_loss.png":"Loss maximum drawdown","training_volatility_loss.png":"Loss biến động","learning_rate_history.png":"Lịch sử learning rate","seed_validation_comparison.png":"So sánh validation giữa các seed","raw_vs_calibrated_coverage.png":"Coverage trước và sau conformal","interval_width_by_horizon.png":"Độ rộng khoảng theo kỳ hạn","interval_score_by_horizon.png":"Interval score theo kỳ hạn","conditional_coverage_by_volatility.png":"Coverage theo trạng thái biến động","direction_probability_vs_actual.png":"Xác suất tăng và kết quả thực tế","brier_score_by_horizon.png":"Brier score theo kỳ hạn","mean_gate_weights_by_horizon.png":"Trọng số gate trung bình","gate_entropy_by_horizon.png":"Entropy gate chuẩn hóa","expert_disagreement.png":"Mức bất đồng giữa các expert","expert_latent_correlation.png":"Tương quan dự báo giữa các expert","expert_usage_by_market_condition.png":"Mức sử dụng expert","predicted_vs_actual_volatility.png":"Biến động dự báo và thực tế","mdd_threshold_calibration.png":"Tần suất vượt ngưỡng MDD","baseline_return_pinball_comparison.png":"So sánh pinball với baseline","baseline_direction_brier_comparison.png":"So sánh Brier với baseline","baseline_interval_coverage_comparison.png":"So sánh coverage","baseline_interval_score_comparison.png":"So sánh interval score","ablation_comparison.png":"Kết quả ablation","bootstrap_confidence_intervals.png":"Khoảng tin cậy bootstrap","performance_by_market_condition.png":"Hiệu năng theo điều kiện thị trường","seed_stability.png":"Độ ổn định theo seed","latest_horizon_return_profile.png":"Hồ sơ lợi suất mới nhất","latest_projected_index_interval.png":"Khoảng chỉ số dự phóng mới nhất","latest_gate_weights.png":"Gate mới nhất","latest_risk_profile.png":"Hồ sơ rủi ro mới nhất","latest_confidence_components.png":"Các thành phần confidence mới nhất"}
 for h in hs:
     titles.update({f"predicted_vs_actual_return_h{h}.png":f"Lợi suất dự báo và thực tế — {h} phiên",f"return_fan_chart_h{h}.png":f"Biểu đồ quạt lợi suất — {h} phiên",f"residual_return_h{h}.png":f"Phần dư lợi suất — {h} phiên",f"rolling_coverage_h{h}.png":f"Coverage cuốn chiếu — {h} phiên",f"direction_reliability_h{h}.png":f"Độ tin cậy xác suất hướng — {h} phiên",f"gate_weights_h{h}.png":f"Trọng số gate — {h} phiên",f"expert_predictions_h{h}.png":f"Dự báo riêng từng expert — {h} phiên",f"predicted_vs_actual_mdd_h{h}.png":f"MDD dự báo và thực tế — {h} phiên"})
+titles.update({"baseline_point_forecast_comparison.png":"So sánh baseline dự báo điểm","baseline_distribution_comparison.png":"So sánh baseline phân phối","baseline_direction_comparison.png":"So sánh baseline xác suất hướng","baseline_risk_comparison.png":"So sánh baseline rủi ro","conformal_method_comparison.png":"So sánh phương pháp conformal","conformal_interval_score_comparison.png":"So sánh interval score conformal","tuning_fold_scores.png":"Objective theo fold tuning","production_ensemble_consistency.png":"Nhất quán ensemble production","latest_seed_dispersion.png":"Phân tán seed mới nhất","ohlc_mask_impact.png":"Ảnh hưởng mask OHLC","optuna_optimization_history.png":"Lịch sử tối ưu Optuna","optuna_parameter_importance.png":"Tầm quan trọng tham số Optuna","optuna_parallel_coordinate.png":"Tọa độ song song Optuna"})
 
 def h_from(name):
     for h in hs:
@@ -64,6 +69,20 @@ readme=f"""# MSDP — Bộ dự báo phân phối đa thang đo cho VN-Index
 MSDP dự báo trực tiếp phân phối lợi suất VN-Index cho 5, 20 và 60 phiên bằng bốn chuyên gia causal: ngắn hạn, trung hạn, dài hạn và range–volatility. Mô hình đồng thời dự báo xác suất tăng, các phân vị lợi suất, maximum drawdown, realized volatility, trọng số gate và mức bất đồng giữa các expert.
 
 Repository này là phần mềm nghiên cứu, không phải khuyến nghị đầu tư. Toàn bộ số liệu và biểu đồ dưới đây được đọc từ artifact của `{summary.get('run_label')}` run; không dùng số liệu minh họa.
+
+## Định danh kết quả
+
+- Run ID: `{args.run_id}`
+- Git commit: `{production['git_commit']}`
+- Data hash: `{production['data_hash']}`
+- Config: `{production['config_path']}`
+- Generated at: `{production['created_at']}`
+- Test log: `reports/runs/{args.run_id}/test_results.txt`
+- Artifact: `artifacts/models/{args.run_id}/production_ensemble_manifest.json`
+- Số trial: `{summary.get('tuning_trials','chưa ghi')}`
+- Số fold: `{summary.get('tuning_folds','chưa ghi')}`
+- Số seed: `{len(production['seeds'])}`
+- Bootstrap resamples: `{summary.get('bootstrap_resamples','chưa ghi')}`
 
 ## Kết luận chính
 
@@ -118,7 +137,7 @@ python scripts/run_all.py --config configs/quick.yaml --data data/raw/VNINDEX_Da
 python scripts/run_all.py --config configs/default.yaml --data data/raw/VNINDEX_Daily.csv
 python scripts/predict_latest.py --config configs/default.yaml --data data/raw/VNINDEX_Daily.csv --model artifacts/models/production_model.pt
 python scripts/generate_report.py --run latest
-python scripts/update_readme_results.py --run latest
+python scripts/update_readme_results.py --run-id {args.run_id}
 ```
 
 ## Hạn chế
@@ -145,4 +164,4 @@ python scripts/update_readme_results.py --run latest
 
 Không sử dụng kết quả như bảo đảm lợi nhuận hoặc lời khuyên mua bán. Người dùng tự chịu trách nhiệm kiểm tra dữ liệu, giả định, chi phí giao dịch và rủi ro thị trường.
 """
-(ROOT/"README.md").write_text(readme,encoding="utf-8"); (ROOT/"README_VI.md").write_text(readme,encoding="utf-8"); print(f"Đã cập nhật README tiếng Việt với {len(manifest)} biểu đồ cho run {args.run}.")
+(ROOT/"README.md").write_text(readme,encoding="utf-8"); (ROOT/"README_VI.md").write_text(readme,encoding="utf-8"); print(f"Đã cập nhật README tiếng Việt với {len(manifest)} biểu đồ cho run {args.run_id}.")

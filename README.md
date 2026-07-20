@@ -6,6 +6,20 @@ MSDP dự báo trực tiếp phân phối lợi suất VN-Index cho 5, 20 và 60
 
 Repository này là phần mềm nghiên cứu, không phải khuyến nghị đầu tư. Toàn bộ số liệu và biểu đồ dưới đây được đọc từ artifact của `quick` run; không dùng số liệu minh họa.
 
+## Định danh kết quả
+
+- Run ID: `20260720_161451_quick`
+- Git commit: `c2b2a0fdb6e4235291b964fbded26f256604af7d`
+- Data hash: `b9223de5500676ccd64fdb29edc27bf2c28bc04f424397dd3058e674737ea379`
+- Config: `configs\quick.yaml`
+- Generated at: `2026-07-20T16:37:25.246909`
+- Test log: `reports/runs/20260720_161451_quick/test_results.txt`
+- Artifact: `artifacts/models/20260720_161451_quick/production_ensemble_manifest.json`
+- Số trial: `8`
+- Số fold: `2`
+- Số seed: `1`
+- Bootstrap resamples: `100`
+
 ## Kết luận chính
 
 **Trong cấu hình và giai đoạn dữ liệu hiện tại, chưa có bằng chứng cho thấy MSDP vượt baseline.** H5 và H20 có pinball kém ZeroReturn. H60 có pinball và Brier tốt hơn nhưng MAE kém hơn. Mọi CI95 bootstrap của chênh lệch MAE đều chứa 0. Equal-weight ablation có pinball trung bình thấp hơn learned gate.
@@ -19,7 +33,7 @@ Giá trị chính của MSDP hiện nằm ở dự báo phân phối và hiệu 
 - Feature selection và scaler không dùng test.
 - CQR fit trên ensemble calibration prediction.
 - Final test có 830 origin dự báo.
-- Quick run: 201.90 giây, 1 seed, 3 Optuna trials, hai ablation và 50 bootstrap resamples.
+- Quick run: 1364.19 giây, 1 seed, 3 Optuna trials, hai ablation và 50 bootstrap resamples.
 
 ## Kiến trúc và tính đúng toán học
 
@@ -35,9 +49,9 @@ Giá trị chính của MSDP hiện nằm ở dự báo phân phối và hiệu 
 
 | Horizon | MAE | Pinball | Brier | Coverage gốc | Coverage conformal | Pinball Δ so với ZeroReturn |
 |---:|---:|---:|---:|---:|---:|---:|
-| 5 | 2.4054 | 0.7994 | 0.2564 | 76.5% | 91.3% | +0.0530 |
-| 20 | 5.3409 | 1.7225 | 0.2528 | 77.2% | 91.4% | +0.1246 |
-| 60 | 9.2464 | 2.9334 | 0.2488 | 79.8% | 95.5% | +0.1562 |
+| 5 | 2.3688 | 0.7731 | 0.2563 | 80.4% | 91.4% | +0.0267 |
+| 20 | 5.0055 | 1.7032 | 0.2620 | 73.9% | 86.1% | +0.1053 |
+| 60 | 8.8100 | 3.0273 | 0.2515 | 76.6% | 86.4% | +0.2502 |
 
 ## Dự báo mới nhất
 
@@ -45,9 +59,9 @@ Ngày dữ liệu: **2026-07-13 00:00:00**; VN-Index: **1800.54**.
 
 | Horizon | Xác suất tăng | Median return | Khoảng conformal |
 |---:|---:|---:|---:|
-| 5 | 48.0% | +0.198% | [-6.608%; +5.519%] |
-| 20 | 51.3% | -0.052% | [-14.652%; +9.647%] |
-| 60 | 52.6% | +0.894% | [-26.885%; +19.935%] |
+| 5 | 34.5% | -1.373% | [-8.036%; +4.044%] |
+| 20 | 32.6% | -3.379% | [-16.714%; +7.411%] |
+| 60 | 36.6% | -5.976% | [-29.013%; +14.001%] |
 
 
 Ba horizon tạo thành **hồ sơ dự báo theo khoảng thời gian**, không phải đường giá dự báo từng bước.
@@ -64,7 +78,7 @@ python scripts/run_all.py --config configs/quick.yaml --data data/raw/VNINDEX_Da
 python scripts/run_all.py --config configs/default.yaml --data data/raw/VNINDEX_Daily.csv
 python scripts/predict_latest.py --config configs/default.yaml --data data/raw/VNINDEX_Daily.csv --model artifacts/models/production_model.pt
 python scripts/generate_report.py --run latest
-python scripts/update_readme_results.py --run latest
+python scripts/update_readme_results.py --run-id 20260720_161451_quick
 ```
 
 ## Hạn chế
@@ -95,7 +109,7 @@ python scripts/update_readme_results.py --run latest
 
 ![Biến động cuốn chiếu](reports/figures/rolling_volatility.png)
 
-**Nhận xét:** Volatility MAE lần lượt là 7.08%, 6.19%, 5.44% cho H5/H20/H60. Sai số giảm theo horizon nhưng vẫn đáng kể.
+**Nhận xét:** Volatility MAE lần lượt là 7.19%, 6.17%, 5.11% cho H5/H20/H60. Sai số giảm theo horizon nhưng vẫn đáng kể.
 
 ### Phân phối lợi suất ngày
 
@@ -121,43 +135,43 @@ python scripts/update_readme_results.py --run latest
 
 ![Tổng loss huấn luyện](reports/figures/training_total_loss_by_seed.png)
 
-**Nhận xét:** Quick run dùng 1 seed; best epoch là 1 với validation loss 0.3637. Một seed không đủ đánh giá độ ổn định đa seed.
+**Nhận xét:** Quick run dùng 1 seed; best epoch là 1 với validation loss 0.2883. Một seed không đủ đánh giá độ ổn định đa seed.
 
 ### Loss phân vị lợi suất
 
 ![Loss phân vị lợi suất](reports/figures/training_return_loss.png)
 
-**Nhận xét:** Quick run dùng 1 seed; best epoch là 1 với validation loss 0.3637. Một seed không đủ đánh giá độ ổn định đa seed.
+**Nhận xét:** Quick run dùng 1 seed; best epoch là 1 với validation loss 0.2883. Một seed không đủ đánh giá độ ổn định đa seed.
 
 ### Loss xác suất hướng
 
 ![Loss xác suất hướng](reports/figures/training_direction_loss.png)
 
-**Nhận xét:** Quick run dùng 1 seed; best epoch là 1 với validation loss 0.3637. Một seed không đủ đánh giá độ ổn định đa seed.
+**Nhận xét:** Quick run dùng 1 seed; best epoch là 1 với validation loss 0.2883. Một seed không đủ đánh giá độ ổn định đa seed.
 
 ### Loss maximum drawdown
 
 ![Loss maximum drawdown](reports/figures/training_mdd_loss.png)
 
-**Nhận xét:** Quick run dùng 1 seed; best epoch là 1 với validation loss 0.3637. Một seed không đủ đánh giá độ ổn định đa seed.
+**Nhận xét:** Quick run dùng 1 seed; best epoch là 1 với validation loss 0.2883. Một seed không đủ đánh giá độ ổn định đa seed.
 
 ### Loss biến động
 
 ![Loss biến động](reports/figures/training_volatility_loss.png)
 
-**Nhận xét:** Quick run dùng 1 seed; best epoch là 1 với validation loss 0.3637. Một seed không đủ đánh giá độ ổn định đa seed.
+**Nhận xét:** Quick run dùng 1 seed; best epoch là 1 với validation loss 0.2883. Một seed không đủ đánh giá độ ổn định đa seed.
 
 ### Lịch sử learning rate
 
 ![Lịch sử learning rate](reports/figures/learning_rate_history.png)
 
-**Nhận xét:** Quick run dùng 1 seed; best epoch là 1 với validation loss 0.3637. Một seed không đủ đánh giá độ ổn định đa seed.
+**Nhận xét:** Quick run dùng 1 seed; best epoch là 1 với validation loss 0.2883. Một seed không đủ đánh giá độ ổn định đa seed.
 
 ### So sánh validation giữa các seed
 
 ![So sánh validation giữa các seed](reports/figures/seed_validation_comparison.png)
 
-**Nhận xét:** Quick run dùng 1 seed; best epoch là 1 với validation loss 0.3637. Một seed không đủ đánh giá độ ổn định đa seed.
+**Nhận xét:** Quick run dùng 1 seed; best epoch là 1 với validation loss 0.2883. Một seed không đủ đánh giá độ ổn định đa seed.
 
 ## Dự báo lợi suất
 
@@ -165,55 +179,55 @@ python scripts/update_readme_results.py --run latest
 
 ![Lợi suất dự báo và thực tế — 5 phiên](reports/figures/predicted_vs_actual_return_h5.png)
 
-**Nhận xét:** MAE kỳ hạn 5 là 2.405% và Spearman 0.047. Dự báo trung vị chưa bám sát mạnh biến động thực tế; mô hình phù hợp hơn với mô tả phân phối rủi ro so với dự báo điểm.
+**Nhận xét:** MAE kỳ hạn 5 là 2.369% và Spearman 0.051. Dự báo trung vị chưa bám sát mạnh biến động thực tế; mô hình phù hợp hơn với mô tả phân phối rủi ro so với dự báo điểm.
 
 ### Biểu đồ quạt lợi suất — 5 phiên
 
 ![Biểu đồ quạt lợi suất — 5 phiên](reports/figures/return_fan_chart_h5.png)
 
-**Nhận xét:** Khoảng gốc đạt coverage 76.5%. Sau conformal, coverage đạt 91.3%, nhưng độ rộng tăng từ 6.78% lên 10.54%.
+**Nhận xét:** Khoảng gốc đạt coverage 80.4%. Sau conformal, coverage đạt 91.4%, nhưng độ rộng tăng từ 7.32% lên 10.16%.
 
 ### Phần dư lợi suất — 5 phiên
 
 ![Phần dư lợi suất — 5 phiên](reports/figures/residual_return_h5.png)
 
-**Nhận xét:** Phần dư kỳ hạn 5 phản ánh sai số dự báo trung vị; RMSE thực tế là 3.143%. Các cụm sai số lớn cho thấy ảnh hưởng của regime và volatility clustering.
+**Nhận xét:** Phần dư kỳ hạn 5 phản ánh sai số dự báo trung vị; RMSE thực tế là 3.093%. Các cụm sai số lớn cho thấy ảnh hưởng của regime và volatility clustering.
 
 ### Lợi suất dự báo và thực tế — 20 phiên
 
 ![Lợi suất dự báo và thực tế — 20 phiên](reports/figures/predicted_vs_actual_return_h20.png)
 
-**Nhận xét:** MAE kỳ hạn 20 là 5.341% và Spearman 0.069. Dự báo trung vị chưa bám sát mạnh biến động thực tế; mô hình phù hợp hơn với mô tả phân phối rủi ro so với dự báo điểm.
+**Nhận xét:** MAE kỳ hạn 20 là 5.005% và Spearman 0.087. Dự báo trung vị chưa bám sát mạnh biến động thực tế; mô hình phù hợp hơn với mô tả phân phối rủi ro so với dự báo điểm.
 
 ### Biểu đồ quạt lợi suất — 20 phiên
 
 ![Biểu đồ quạt lợi suất — 20 phiên](reports/figures/return_fan_chart_h20.png)
 
-**Nhận xét:** Khoảng gốc đạt coverage 77.2%. Sau conformal, coverage đạt 91.4%, nhưng độ rộng tăng từ 15.82% lên 22.62%.
+**Nhận xét:** Khoảng gốc đạt coverage 73.9%. Sau conformal, coverage đạt 86.1%, nhưng độ rộng tăng từ 14.07% lên 20.73%.
 
 ### Phần dư lợi suất — 20 phiên
 
 ![Phần dư lợi suất — 20 phiên](reports/figures/residual_return_h20.png)
 
-**Nhận xét:** Phần dư kỳ hạn 20 phản ánh sai số dự báo trung vị; RMSE thực tế là 6.725%. Các cụm sai số lớn cho thấy ảnh hưởng của regime và volatility clustering.
+**Nhận xét:** Phần dư kỳ hạn 20 phản ánh sai số dự báo trung vị; RMSE thực tế là 6.629%. Các cụm sai số lớn cho thấy ảnh hưởng của regime và volatility clustering.
 
 ### Lợi suất dự báo và thực tế — 60 phiên
 
 ![Lợi suất dự báo và thực tế — 60 phiên](reports/figures/predicted_vs_actual_return_h60.png)
 
-**Nhận xét:** MAE kỳ hạn 60 là 9.246% và Spearman 0.059. Dự báo trung vị chưa bám sát mạnh biến động thực tế; mô hình phù hợp hơn với mô tả phân phối rủi ro so với dự báo điểm.
+**Nhận xét:** MAE kỳ hạn 60 là 8.810% và Spearman 0.010. Dự báo trung vị chưa bám sát mạnh biến động thực tế; mô hình phù hợp hơn với mô tả phân phối rủi ro so với dự báo điểm.
 
 ### Biểu đồ quạt lợi suất — 60 phiên
 
 ![Biểu đồ quạt lợi suất — 60 phiên](reports/figures/return_fan_chart_h60.png)
 
-**Nhận xét:** Khoảng gốc đạt coverage 79.8%. Sau conformal, coverage đạt 95.5%, nhưng độ rộng tăng từ 31.43% lên 46.01%.
+**Nhận xét:** Khoảng gốc đạt coverage 76.6%. Sau conformal, coverage đạt 86.4%, nhưng độ rộng tăng từ 27.72% lên 39.23%.
 
 ### Phần dư lợi suất — 60 phiên
 
 ![Phần dư lợi suất — 60 phiên](reports/figures/residual_return_h60.png)
 
-**Nhận xét:** Phần dư kỳ hạn 60 phản ánh sai số dự báo trung vị; RMSE thực tế là 11.560%. Các cụm sai số lớn cho thấy ảnh hưởng của regime và volatility clustering.
+**Nhận xét:** Phần dư kỳ hạn 60 phản ánh sai số dự báo trung vị; RMSE thực tế là 11.621%. Các cụm sai số lớn cho thấy ảnh hưởng của regime và volatility clustering.
 
 ## Hiệu chỉnh conformal
 
@@ -221,19 +235,19 @@ python scripts/update_readme_results.py --run latest
 
 ![Coverage cuốn chiếu — 5 phiên](reports/figures/rolling_coverage_h5.png)
 
-**Nhận xét:** Coverage cuốn chiếu kỳ hạn 5 không ổn định tuyệt đối theo thời gian. Coverage tổng thể sau hiệu chỉnh là 91.3%; đây là coverage thực nghiệm, không phải bảo đảm iid.
+**Nhận xét:** Coverage cuốn chiếu kỳ hạn 5 không ổn định tuyệt đối theo thời gian. Coverage tổng thể sau hiệu chỉnh là 91.4%; đây là coverage thực nghiệm, không phải bảo đảm iid.
 
 ### Coverage cuốn chiếu — 20 phiên
 
 ![Coverage cuốn chiếu — 20 phiên](reports/figures/rolling_coverage_h20.png)
 
-**Nhận xét:** Coverage cuốn chiếu kỳ hạn 20 không ổn định tuyệt đối theo thời gian. Coverage tổng thể sau hiệu chỉnh là 91.4%; đây là coverage thực nghiệm, không phải bảo đảm iid.
+**Nhận xét:** Coverage cuốn chiếu kỳ hạn 20 không ổn định tuyệt đối theo thời gian. Coverage tổng thể sau hiệu chỉnh là 86.1%; đây là coverage thực nghiệm, không phải bảo đảm iid.
 
 ### Coverage cuốn chiếu — 60 phiên
 
 ![Coverage cuốn chiếu — 60 phiên](reports/figures/rolling_coverage_h60.png)
 
-**Nhận xét:** Coverage cuốn chiếu kỳ hạn 60 không ổn định tuyệt đối theo thời gian. Coverage tổng thể sau hiệu chỉnh là 95.5%; đây là coverage thực nghiệm, không phải bảo đảm iid.
+**Nhận xét:** Coverage cuốn chiếu kỳ hạn 60 không ổn định tuyệt đối theo thời gian. Coverage tổng thể sau hiệu chỉnh là 86.4%; đây là coverage thực nghiệm, không phải bảo đảm iid.
 
 ### Coverage trước và sau conformal
 
@@ -271,25 +285,31 @@ python scripts/update_readme_results.py --run latest
 
 **Nhận xét:** Conformal cải thiện độ bao phủ nhưng làm khoảng rộng hơn, đặc biệt ở kỳ hạn dài. Giá trị chính là mô tả bất định; độ sắc nét của dự báo giảm khi yêu cầu coverage cao.
 
+### So sánh interval score conformal
+
+![So sánh interval score conformal](reports/figures/conformal_interval_score_comparison.png)
+
+**Nhận xét:** Conformal cải thiện độ bao phủ nhưng làm khoảng rộng hơn, đặc biệt ở kỳ hạn dài. Giá trị chính là mô tả bất định; độ sắc nét của dự báo giảm khi yêu cầu coverage cao.
+
 ## Xác suất hướng
 
 ### Độ tin cậy xác suất hướng — 5 phiên
 
 ![Độ tin cậy xác suất hướng — 5 phiên](reports/figures/direction_reliability_h5.png)
 
-**Nhận xét:** Brier score kỳ hạn 5 là 0.2564, ROC AUC 0.533. Xác suất có thông tin hạn chế và chưa tạo phân tách lớp mạnh.
+**Nhận xét:** Brier score kỳ hạn 5 là 0.2563, ROC AUC 0.556. Xác suất có thông tin hạn chế và chưa tạo phân tách lớp mạnh.
 
 ### Độ tin cậy xác suất hướng — 20 phiên
 
 ![Độ tin cậy xác suất hướng — 20 phiên](reports/figures/direction_reliability_h20.png)
 
-**Nhận xét:** Brier score kỳ hạn 20 là 0.2528, ROC AUC 0.545. Xác suất có thông tin hạn chế và chưa tạo phân tách lớp mạnh.
+**Nhận xét:** Brier score kỳ hạn 20 là 0.2620, ROC AUC 0.553. Xác suất có thông tin hạn chế và chưa tạo phân tách lớp mạnh.
 
 ### Độ tin cậy xác suất hướng — 60 phiên
 
 ![Độ tin cậy xác suất hướng — 60 phiên](reports/figures/direction_reliability_h60.png)
 
-**Nhận xét:** Brier score kỳ hạn 60 là 0.2488, ROC AUC 0.525. Xác suất có thông tin hạn chế và chưa tạo phân tách lớp mạnh.
+**Nhận xét:** Brier score kỳ hạn 60 là 0.2515, ROC AUC 0.536. Xác suất có thông tin hạn chế và chưa tạo phân tách lớp mạnh.
 
 ### Xác suất tăng và kết quả thực tế
 
@@ -309,43 +329,49 @@ python scripts/update_readme_results.py --run latest
 
 **Nhận xét:** Brier giảm so với ZeroReturn ở cả ba kỳ hạn, nhưng balanced accuracy vẫn gần vùng 0,5. Không nên diễn giải xác suất tăng như tín hiệu giao dịch chắc chắn.
 
+### So sánh baseline xác suất hướng
+
+![So sánh baseline xác suất hướng](reports/figures/baseline_direction_comparison.png)
+
+**Nhận xét:** H5 và H20 có pinball kém ZeroReturn; H60 có pinball tốt hơn nhưng MAE kém hơn. Không có cải thiện nhất quán trên mọi metric và horizon.
+
 ## Expert và gate
 
 ### Trọng số gate — 5 phiên
 
 ![Trọng số gate — 5 phiên](reports/figures/gate_weights_h5.png)
 
-**Nhận xét:** Expert có trọng số trung bình cao nhất là `medium` (0.314). Kết quả chưa hỗ trợ giả thuyết short expert chi phối kỳ hạn 5 phiên.
+**Nhận xét:** Expert có trọng số trung bình cao nhất là `range_vol` (0.284). Kết quả chưa hỗ trợ giả thuyết short expert chi phối kỳ hạn 5 phiên.
 
 ### Dự báo riêng từng expert — 5 phiên
 
 ![Dự báo riêng từng expert — 5 phiên](reports/figures/expert_predictions_h5.png)
 
-**Nhận xét:** Độ lệch chuẩn trung bình giữa auxiliary expert forecasts ở kỳ hạn 5 là 0.436%. Đây là bất đồng dự báo, khác với entropy của trọng số gate.
+**Nhận xét:** Độ lệch chuẩn trung bình giữa auxiliary expert forecasts ở kỳ hạn 5 là 0.339%. Đây là bất đồng dự báo, khác với entropy của trọng số gate.
 
 ### Trọng số gate — 20 phiên
 
 ![Trọng số gate — 20 phiên](reports/figures/gate_weights_h20.png)
 
-**Nhận xét:** Expert có trọng số trung bình cao nhất là `medium` (0.321). Long expert tăng vai trò ở kỳ hạn dài, nhưng mức phân hóa gate vẫn tương đối thấp.
+**Nhận xét:** Expert có trọng số trung bình cao nhất là `medium` (0.314). Long expert tăng vai trò ở kỳ hạn dài, nhưng mức phân hóa gate vẫn tương đối thấp.
 
 ### Dự báo riêng từng expert — 20 phiên
 
 ![Dự báo riêng từng expert — 20 phiên](reports/figures/expert_predictions_h20.png)
 
-**Nhận xét:** Độ lệch chuẩn trung bình giữa auxiliary expert forecasts ở kỳ hạn 20 là 0.901%. Đây là bất đồng dự báo, khác với entropy của trọng số gate.
+**Nhận xét:** Độ lệch chuẩn trung bình giữa auxiliary expert forecasts ở kỳ hạn 20 là 1.480%. Đây là bất đồng dự báo, khác với entropy của trọng số gate.
 
 ### Trọng số gate — 60 phiên
 
 ![Trọng số gate — 60 phiên](reports/figures/gate_weights_h60.png)
 
-**Nhận xét:** Expert có trọng số trung bình cao nhất là `long` (0.313). Long expert tăng vai trò ở kỳ hạn dài, nhưng mức phân hóa gate vẫn tương đối thấp.
+**Nhận xét:** Expert có trọng số trung bình cao nhất là `range_vol` (0.319). Long expert tăng vai trò ở kỳ hạn dài, nhưng mức phân hóa gate vẫn tương đối thấp.
 
 ### Dự báo riêng từng expert — 60 phiên
 
 ![Dự báo riêng từng expert — 60 phiên](reports/figures/expert_predictions_h60.png)
 
-**Nhận xét:** Độ lệch chuẩn trung bình giữa auxiliary expert forecasts ở kỳ hạn 60 là 1.575%. Đây là bất đồng dự báo, khác với entropy của trọng số gate.
+**Nhận xét:** Độ lệch chuẩn trung bình giữa auxiliary expert forecasts ở kỳ hạn 60 là 2.407%. Đây là bất đồng dự báo, khác với entropy của trọng số gate.
 
 ### Trọng số gate trung bình
 
@@ -389,25 +415,25 @@ python scripts/update_readme_results.py --run latest
 
 ![MDD dự báo và thực tế — 5 phiên](reports/figures/predicted_vs_actual_mdd_h5.png)
 
-**Nhận xét:** MDD MAE kỳ hạn 5 là 1.528%. q10 biểu diễn kịch bản drawdown xấu hơn, còn q90 gần 0 hơn; toàn bộ quantile đã được audit không dương.
+**Nhận xét:** MDD MAE kỳ hạn 5 là 1.517%. q10 biểu diễn kịch bản drawdown xấu hơn, còn q90 gần 0 hơn; toàn bộ quantile đã được audit không dương.
 
 ### MDD dự báo và thực tế — 20 phiên
 
 ![MDD dự báo và thực tế — 20 phiên](reports/figures/predicted_vs_actual_mdd_h20.png)
 
-**Nhận xét:** MDD MAE kỳ hạn 20 là 3.149%. q10 biểu diễn kịch bản drawdown xấu hơn, còn q90 gần 0 hơn; toàn bộ quantile đã được audit không dương.
+**Nhận xét:** MDD MAE kỳ hạn 20 là 3.192%. q10 biểu diễn kịch bản drawdown xấu hơn, còn q90 gần 0 hơn; toàn bộ quantile đã được audit không dương.
 
 ### MDD dự báo và thực tế — 60 phiên
 
 ![MDD dự báo và thực tế — 60 phiên](reports/figures/predicted_vs_actual_mdd_h60.png)
 
-**Nhận xét:** MDD MAE kỳ hạn 60 là 4.985%. q10 biểu diễn kịch bản drawdown xấu hơn, còn q90 gần 0 hơn; toàn bộ quantile đã được audit không dương.
+**Nhận xét:** MDD MAE kỳ hạn 60 là 5.399%. q10 biểu diễn kịch bản drawdown xấu hơn, còn q90 gần 0 hơn; toàn bộ quantile đã được audit không dương.
 
 ### Biến động dự báo và thực tế
 
 ![Biến động dự báo và thực tế](reports/figures/predicted_vs_actual_volatility.png)
 
-**Nhận xét:** Volatility MAE lần lượt là 7.08%, 6.19%, 5.44% cho H5/H20/H60. Sai số giảm theo horizon nhưng vẫn đáng kể.
+**Nhận xét:** Volatility MAE lần lượt là 7.19%, 6.17%, 5.11% cho H5/H20/H60. Sai số giảm theo horizon nhưng vẫn đáng kể.
 
 ### Tần suất vượt ngưỡng MDD
 
@@ -427,7 +453,7 @@ python scripts/update_readme_results.py --run latest
 
 ![Kết quả ablation](reports/figures/ablation_comparison.png)
 
-**Nhận xét:** Equal-weight đạt mean pinball 1.9507, thấp hơn Full MSDP khoảng 1.8184; single-scale đạt 1.6853. Learned gate chưa vượt equal-weight.
+**Nhận xét:** Equal-weight đạt mean pinball 1.8259, thấp hơn Full MSDP khoảng 1.8345; single-scale đạt 1.5638. Learned gate chưa vượt equal-weight.
 
 ### Khoảng tin cậy bootstrap
 
@@ -445,7 +471,25 @@ python scripts/update_readme_results.py --run latest
 
 ![Độ ổn định theo seed](reports/figures/seed_stability.png)
 
-**Nhận xét:** Quick run dùng 1 seed; best epoch là 1 với validation loss 0.3637. Một seed không đủ đánh giá độ ổn định đa seed.
+**Nhận xét:** Quick run dùng 1 seed; best epoch là 1 với validation loss 0.2883. Một seed không đủ đánh giá độ ổn định đa seed.
+
+### So sánh baseline dự báo điểm
+
+![So sánh baseline dự báo điểm](reports/figures/baseline_point_forecast_comparison.png)
+
+**Nhận xét:** H5 và H20 có pinball kém ZeroReturn; H60 có pinball tốt hơn nhưng MAE kém hơn. Không có cải thiện nhất quán trên mọi metric và horizon.
+
+### So sánh baseline phân phối
+
+![So sánh baseline phân phối](reports/figures/baseline_distribution_comparison.png)
+
+**Nhận xét:** H5 và H20 có pinball kém ZeroReturn; H60 có pinball tốt hơn nhưng MAE kém hơn. Không có cải thiện nhất quán trên mọi metric và horizon.
+
+### So sánh baseline rủi ro
+
+![So sánh baseline rủi ro](reports/figures/baseline_risk_comparison.png)
+
+**Nhận xét:** H5 và H20 có pinball kém ZeroReturn; H60 có pinball tốt hơn nhưng MAE kém hơn. Không có cải thiện nhất quán trên mọi metric và horizon.
 
 ## Dự báo mới nhất
 
@@ -472,6 +516,56 @@ python scripts/update_readme_results.py --run latest
 ![Các thành phần confidence mới nhất](reports/figures/latest_confidence_components.png)
 
 **Nhận xét:** Hồ sơ ngày 2026-07-13 00:00:00 cho thấy median return dương ở cả ba horizon, nhưng calibrated interval đều bao gồm 0 và mở rộng mạnh theo kỳ hạn. Đây không phải đường giá tương lai hay khuyến nghị mua bán.
+
+### Phân tán seed mới nhất
+
+![Phân tán seed mới nhất](reports/figures/latest_seed_dispersion.png)
+
+**Nhận xét:** Hồ sơ ngày 2026-07-13 00:00:00 cho thấy median return dương ở cả ba horizon, nhưng calibrated interval đều bao gồm 0 và mở rộng mạnh theo kỳ hạn. Đây không phải đường giá tương lai hay khuyến nghị mua bán.
+
+## Biểu đồ bổ sung
+
+### So sánh phương pháp conformal
+
+![So sánh phương pháp conformal](reports/figures/conformal_method_comparison.png)
+
+**Nhận xét:** Biểu đồ được sinh trực tiếp từ dữ liệu hoặc artifact của quick pipeline; không sử dụng số liệu minh họa giả.
+
+### Objective theo fold tuning
+
+![Objective theo fold tuning](reports/figures/tuning_fold_scores.png)
+
+**Nhận xét:** Biểu đồ được sinh trực tiếp từ dữ liệu hoặc artifact của quick pipeline; không sử dụng số liệu minh họa giả.
+
+### Nhất quán ensemble production
+
+![Nhất quán ensemble production](reports/figures/production_ensemble_consistency.png)
+
+**Nhận xét:** Biểu đồ được sinh trực tiếp từ dữ liệu hoặc artifact của quick pipeline; không sử dụng số liệu minh họa giả.
+
+### Ảnh hưởng mask OHLC
+
+![Ảnh hưởng mask OHLC](reports/figures/ohlc_mask_impact.png)
+
+**Nhận xét:** Biểu đồ được sinh trực tiếp từ dữ liệu hoặc artifact của quick pipeline; không sử dụng số liệu minh họa giả.
+
+### Lịch sử tối ưu Optuna
+
+![Lịch sử tối ưu Optuna](reports/figures/optuna_optimization_history.png)
+
+**Nhận xét:** Biểu đồ được sinh trực tiếp từ dữ liệu hoặc artifact của quick pipeline; không sử dụng số liệu minh họa giả.
+
+### Tầm quan trọng tham số Optuna
+
+![Tầm quan trọng tham số Optuna](reports/figures/optuna_parameter_importance.png)
+
+**Nhận xét:** Biểu đồ được sinh trực tiếp từ dữ liệu hoặc artifact của quick pipeline; không sử dụng số liệu minh họa giả.
+
+### Tọa độ song song Optuna
+
+![Tọa độ song song Optuna](reports/figures/optuna_parallel_coordinate.png)
+
+**Nhận xét:** Biểu đồ được sinh trực tiếp từ dữ liệu hoặc artifact của quick pipeline; không sử dụng số liệu minh họa giả.
 
 ## Tài liệu chi tiết
 

@@ -8,7 +8,11 @@ from .interpretation import artifact_confidence,latest_seed_dispersions,percenti
 from .models import MSDP
 from .training.ensemble import average_predictions
 
-def _repo_root(model_path): return Path(model_path).resolve().parents[2]
+def _repo_root(model_path):
+    path=Path(model_path).resolve()
+    for parent in path.parents:
+        if (parent/"pyproject.toml").exists() and (parent/"src/msdp").exists(): return parent
+    raise ValueError(f"Không tìm được repository root từ {path}")
 def _resolve(root,path):
     p=Path(path); return p if p.is_absolute() else root/p
 
@@ -35,7 +39,7 @@ def predict_latest_ensemble(data_path,model_or_manifest):
         model=MSDP(**manifest["model_args"]); model.load_state_dict(state); model.eval()
         with torch.no_grad(): scaled={k:v.numpy() for k,v in model(x).items() if k not in {"expert_latents","context","direction_logits"}}
         seed_predictions.append(target_scalers.inverse_predictions(scaled))
-    ensemble=average_predictions(seed_predictions); calibrator=joblib.load(_resolve(root,manifest["calibration_path"])); lower,upper=calibrator.transform(ensemble["return_quantiles"][:,:,0],ensemble["return_quantiles"][:,:,-1]); dispersions=latest_seed_dispersions(seed_predictions); reference=joblib.load(_resolve(root,manifest["confidence_reference_path"])); latest_feature=features.iloc[-1]; distance=float(np.sqrt(np.nanmean(((latest_feature-reference["development_median"])/reference["development_iqr"])**2))); drift=percentile_rank(distance,reference["development_distance"]); horizons=[]
+    ensemble=average_predictions(seed_predictions); calibrator=joblib.load(_resolve(root,manifest["calibration_path"])); lower,upper=calibrator.transform_all_horizons(ensemble["return_quantiles"][:,:,0],ensemble["return_quantiles"][:,:,-1]); dispersions=latest_seed_dispersions(seed_predictions); reference=joblib.load(_resolve(root,manifest["confidence_reference_path"])); latest_feature=features.iloc[-1]; distance=float(np.sqrt(np.nanmean(((latest_feature-reference["development_median"])/reference["development_iqr"])**2))); drift=percentile_rank(distance,reference["development_distance"]); horizons=[]
     for j,h in enumerate(manifest["model_args"]["horizons"]):
         seed_ranks=[percentile_rank(dispersions[j][k],reference["calibration_seed_dispersion"][j][k]) for k in ("return","direction","mdd","volatility")]; seed_u=None if all(x is None for x in seed_ranks) else float(np.mean([x for x in seed_ranks if x is not None])); components={"interval":percentile_rank(float(upper[0,j]-lower[0,j]),reference["calibrated_width"][:,j]),"coverage":min(abs(float(reference["calibrated_coverage"][j])-reference["target_coverage"])/.20,1.),"disagreement":percentile_rank(float(ensemble["expert_disagreement"][0,j]),reference["calibration_disagreement"][:,j]),"seed":seed_u,"drift":drift}; sources={"interval":"calibration interval-width percentile","coverage":"calibration coverage","disagreement":"calibration auxiliary disagreement percentile","seed":"calibration seed-dispersion percentiles","drift":"development robust-distance percentile"}; conf=artifact_confidence(components,sources); q=ensemble["return_quantiles"][0,j]; horizons.append({"horizon":h,"probability_positive":float(ensemble["direction_prob"][0,j]),"return_quantiles":q.tolist(),"raw_interval":[float(q[0]),float(q[-1])],"calibrated_interval":[float(lower[0,j]),float(upper[0,j])],"projected_index_quantiles":[float(df.close.iloc[-1]*np.exp(q[k]/100)) for k in [0,2,4]],"mdd_quantiles":ensemble["mdd_quantiles"][0,j].tolist(),"volatility":float(ensemble["volatility"][0,j]),"expert_weights":ensemble["gate_weights"][0,j].tolist(),"expert_disagreement":float(ensemble["expert_disagreement"][0,j]),**{f"seed_dispersion_{k}":v for k,v in dispersions[j].items()},"confidence_score":conf["score"],"confidence_label":conf["label"],"confidence_components":conf["components"],"confidence_component_sources":conf["component_sources"],"confidence_missing_components":conf["missing_components"],"confidence_components_used":conf["used_components"]})
     return {"run_id":manifest["run_id"],"artifact_role":"production","data_date":str(df.date.iloc[-1]),"current_vnindex":float(df.close.iloc[-1]),"horizons":horizons},seed_predictions

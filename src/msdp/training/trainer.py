@@ -15,7 +15,7 @@ def train_model(model,train_ds,val_ds,cfg,device="cpu",trial=None):
         for x,y,_ in train:
             x=x.to(device); y=y.to(device); opt.zero_grad(); total,parts=multitask_loss(model(x),y,cfg["horizons"],cfg["quantiles"],cfg["mdd_quantiles"],cfg["loss_weights"])
             if not torch.isfinite(total): raise FloatingPointError(f"Non-finite training loss at epoch {epoch+1}")
-            total.backward(); torch.nn.utils.clip_grad_norm_(model.parameters(),1.); opt.step()
+            total.backward(); torch.nn.utils.clip_grad_norm_(model.parameters(),float(tc.get("gradient_clip",1.))); opt.step()
             for k,v in {"total":total,**parts}.items(): train_parts.setdefault(k,[]).append(float(v.detach()))
         model.eval(); vals=[]
         with torch.no_grad():
