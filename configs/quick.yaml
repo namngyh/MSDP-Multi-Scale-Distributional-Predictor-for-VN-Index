@@ -1,0 +1,18 @@
+seed: 42
+seeds: [42]
+device: cpu
+deterministic: true
+horizons: [5, 20, 60]
+quantiles: [0.05, 0.25, 0.50, 0.75, 0.95]
+mdd_quantiles: [0.10, 0.50, 0.90]
+lookback: 126
+purge_gap: 60
+calibration_window: 126
+target_coverage: 0.90
+min_feature_nonmissing: 0.65
+split: {development: 0.70, calibration: 0.15, test: 0.15, min_development: 500, min_calibration: 100, min_test: 100}
+model: {hidden_dim: 32, latent_dim: 32, n_blocks: 2, dropout: 0.10, gate_temperature: 1.0, medium_pool: 5, long_pool: 10}
+training: {epochs: 3, patience: 2, batch_size: 128, learning_rate: 0.001, weight_decay: 0.00001, folds: 1, trials: 1}
+loss_weights: {return: 1.0, direction: 0.25, mdd: 0.25, volatility: 0.20, gate_entropy: 0.001}
+bootstrap_resamples: 50
+
