@@ -5,7 +5,9 @@ import pandas as pd
 def _slope(x):
     y=np.asarray(x); z=np.arange(len(y)); return np.polyfit(z,y,1)[0] if np.isfinite(y).all() else np.nan
 
-def build_features(df: pd.DataFrame, min_nonmissing=.70):
+def build_features(df: pd.DataFrame, min_nonmissing=.70, invalid_ohlc_policy="mask_features"):
+    from .data_quality import apply_invalid_ohlc_policy
+    df,_=apply_invalid_ohlc_policy(df,invalid_ohlc_policy)
     c=df.close.astype(float); lr=np.log(c).diff(); f=pd.DataFrame(index=df.index); meta=[]
     range_vol_groups={"range","volatility","drawdown","market_position"}
     range_vol_names={"macd","macd_histogram","delta_macd","delta_histogram","rsi_14","volume_shock","price_volume_corr_20"}

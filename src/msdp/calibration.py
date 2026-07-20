@@ -30,7 +30,18 @@ class StaticCQRCalibrator:
         return self
     def transform(self,lower,upper):
         if self.qhat is None: raise RuntimeError("Calibrator has not been fitted")
-        return np.asarray(lower)-self.qhat,np.asarray(upper)+self.qhat
+        lower=np.asarray(lower,dtype=float); upper=np.asarray(upper,dtype=float)
+        if lower.shape!=upper.shape: raise ValueError(f"lower/upper shape mismatch: {lower.shape} != {upper.shape}")
+        if lower.ndim==0 or lower.shape[-1]!=len(self.qhat): raise ValueError(f"Input horizon dimension must equal qhat length {len(self.qhat)}; got shape {lower.shape}. Use transform_horizon for one horizon.")
+        return lower-self.qhat,upper+self.qhat
+    def transform_horizon(self,lower,upper,horizon_index):
+        if self.qhat is None: raise RuntimeError("Calibrator has not been fitted")
+        if horizon_index is None: raise ValueError("horizon_index is required for scalar-horizon calibration")
+        j=int(horizon_index)
+        if not 0<=j<len(self.qhat): raise IndexError(f"horizon_index {j} outside [0,{len(self.qhat)-1}]")
+        lower=np.asarray(lower,dtype=float); upper=np.asarray(upper,dtype=float)
+        if lower.shape!=upper.shape: raise ValueError("lower and upper must have identical shapes")
+        return lower-self.qhat[j],upper+self.qhat[j]
     def state_dict(self): return {"alpha":self.alpha,"qhat":self.qhat.tolist(),"metadata":self.metadata}
     @classmethod
     def from_state_dict(cls,state):
@@ -61,4 +72,3 @@ class AdaptiveConformalCalibrator(RollingCQRCalibrator):
     def __init__(self,window=252,alpha=.1,gamma=.01,horizons=(5,20,60)): super().__init__(window,alpha,horizons); self.target=alpha; self.gamma=gamma
     def update(self,lower,upper,y,forecast_time=None):
         miss=np.asarray((y<lower)|(y>upper),float).mean(); self.alpha=float(np.clip(self.alpha+self.gamma*(self.target-miss),.01,.5)); super().update(lower,upper,y,forecast_time)
-

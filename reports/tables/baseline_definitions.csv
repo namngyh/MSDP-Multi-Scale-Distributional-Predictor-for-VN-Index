@@ -1,0 +1,7 @@
+baseline,mục đích
+Dự báo điểm bằng 0,Mốc MAE lợi suất
+Phân phối thực nghiệm vô điều kiện,"Mốc phân vị lợi suất, MDD và biến động"
+Tần suất lịch sử,Mốc xác suất hướng
+Trung bình lịch sử,Mốc điểm và phân vị phần dư
+Ridge trực tiếp,Mốc tuyến tính có điều kiện
+Logistic,Mốc phân loại hướng có điều kiện

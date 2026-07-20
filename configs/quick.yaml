@@ -17,3 +17,4 @@ loss_weights: {return: 1.0, direction: 0.25, mdd: 0.35, volatility: 0.15, balanc
 bootstrap_resamples: 50
 ablations: [equal, single]
 run_label: quick
+data_quality: {invalid_ohlc_policy: mask_features}

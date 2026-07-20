@@ -5,7 +5,7 @@
   "torch": "2.13.0+cpu",
   "cuda": false,
   "seed": 42,
-  "git_commit": "a07cd942762746cacc0f5c3433fb0cd98f1202d3",
+  "git_commit": "188752df319a752fbbac381d095f6a9b630f2d1e",
   "data_sha256": "b9223de5500676ccd64fdb29edc27bf2c28bc04f424397dd3058e674737ea379",
   "date_range": [
     "2000-07-28",
@@ -82,6 +82,9 @@
       "equal",
       "single"
     ],
-    "run_label": "quick"
+    "run_label": "quick",
+    "data_quality": {
+      "invalid_ohlc_policy": "mask_features"
+    }
   }
 }

@@ -2,11 +2,11 @@
   "fit_partition": "development",
   "fit_indices": [
     0,
-    4111
+    3868
   ],
   "fit_dates": [
     "2002-03-20 00:00:00",
-    "2018-09-27 00:00:00"
+    "2017-12-28 00:00:00"
   ],
   "feature_order": [
     "log_return_1",

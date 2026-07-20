@@ -1,3 +1,2 @@
 from .msdp import MSDP
-from .baselines import ZeroReturnBaseline, HistoricalMeanBaseline, RidgeDirectBaseline
-
+from .baselines import ZeroReturnBaseline,ZeroPointForecastBaseline,UnconditionalEmpiricalDistributionBaseline,HistoricalFrequencyDirectionBaseline,HistoricalMeanBaseline,RidgeDirectBaseline,LogisticDirectionBaseline

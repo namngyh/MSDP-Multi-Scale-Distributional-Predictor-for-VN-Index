@@ -42,3 +42,14 @@ def predict(model,ds,batch_size=256,device="cpu"):
                 if k not in {"expert_latents","context","direction_logits"}: bags.setdefault(k,[]).append(v.cpu().numpy())
     if not indices: raise ValueError("Prediction dataset is empty")
     return {k:np.concatenate(v) for k,v in bags.items()},np.asarray(indices)
+
+def train_fixed_epochs(model,dataset,cfg,epochs,device="cpu"):
+    """Production retraining after evaluation with an epoch policy frozen beforehand."""
+    model.to(device); tc=cfg["training"]; loader=DataLoader(dataset,batch_size=tc["batch_size"],shuffle=True,num_workers=tc.get("num_workers",0)); opt=torch.optim.AdamW(model.parameters(),lr=tc["learning_rate"],weight_decay=tc["weight_decay"])
+    for epoch in range(int(epochs)):
+        model.train()
+        for x,y,_ in loader:
+            opt.zero_grad(); total,_=multitask_loss(model(x.to(device)),y.to(device),cfg["horizons"],cfg["quantiles"],cfg["mdd_quantiles"],cfg["loss_weights"])
+            if not torch.isfinite(total): raise FloatingPointError(f"Non-finite production loss at epoch {epoch+1}")
+            total.backward(); torch.nn.utils.clip_grad_norm_(model.parameters(),float(tc.get("gradient_clip",1.))); opt.step()
+    return model
