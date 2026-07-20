@@ -12,7 +12,8 @@ target_coverage: 0.90
 min_feature_nonmissing: 0.65
 split: {development: 0.70, calibration: 0.15, test: 0.15, min_development: 500, min_calibration: 100, min_test: 100}
 model: {hidden_dim: 32, latent_dim: 32, n_blocks: 2, dropout: 0.10, gate_temperature: 1.0, medium_pool: 5, long_pool: 10}
-training: {epochs: 3, patience: 2, batch_size: 128, learning_rate: 0.001, weight_decay: 0.00001, folds: 1, trials: 1}
-loss_weights: {return: 1.0, direction: 0.25, mdd: 0.25, volatility: 0.20, gate_entropy: 0.001}
+training: {epochs: 15, tuning_epochs: 4, patience: 3, batch_size: 128, learning_rate: 0.001, weight_decay: 0.00001, folds: 1, trials: 3, num_workers: 0}
+loss_weights: {return: 1.0, direction: 0.25, mdd: 0.35, volatility: 0.15, balance: 0.01, aux: 0.05, entropy: 0.0}
 bootstrap_resamples: 50
-
+ablations: [equal, single]
+run_label: quick

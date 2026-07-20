@@ -7,8 +7,12 @@ def _slope(x):
 
 def build_features(df: pd.DataFrame, min_nonmissing=.70):
     c=df.close.astype(float); lr=np.log(c).diff(); f=pd.DataFrame(index=df.index); meta=[]
+    range_vol_groups={"range","volatility","drawdown","market_position"}
+    range_vol_names={"macd","macd_histogram","delta_macd","delta_histogram","rsi_14","volume_shock","price_volume_corr_20"}
     def add(name, values, group, formula, lookback, requires="Close"):
-        f[name]=values; meta.append({"name":name,"group":group,"formula":formula,"lookback":lookback,"requires":requires})
+        tags=["short","medium","long"]
+        if group in range_vol_groups or name in range_vol_names: tags.append("range_volatility")
+        f[name]=values; meta.append({"name":name,"group":group,"formula":formula,"lookback":lookback,"requires":requires,"requires_ohlcv":requires.lower()!="close","expert_tags":"|".join(tags)})
     add("log_return_1",lr,"return","log(C_t/C_t-1)",1)
     for w in [2,5,10,20,60]: add(f"return_{w}",c.pct_change(w),"return",f"C_t/C_t-{w}-1",w)
     if "open" in df:
@@ -54,6 +58,12 @@ def build_features(df: pd.DataFrame, min_nonmissing=.70):
         add("price_volume_corr_20",lr.rolling(20).corr(v.diff()),"volume","corr(return,delta logV)",20,"Volume")
         add("signed_volume_proxy",np.sign(lr)*v,"volume","sign(return)*logV",1,"Volume")
         add("volume_shock",v-v.rolling(20).median(),"volume","logV-median20",20,"Volume")
-    keep=[x for x in f if f[x].notna().mean() >= min_nonmissing]
-    return f[keep].replace([np.inf,-np.inf],np.nan), pd.DataFrame([m for m in meta if m["name"] in keep])
+    return f.replace([np.inf,-np.inf],np.nan), pd.DataFrame(meta)
 
+def select_features_on_development(features,metadata,development_indices,max_missing=.20):
+    """Remove structural warm-up first, then select columns from development only."""
+    maximum_lookback=int(metadata.lookback.max()); warmup=maximum_lookback-1; development_indices=np.asarray(development_indices); eligible=development_indices[development_indices>=warmup]
+    if not len(eligible): raise ValueError("No development rows remain after feature warm-up")
+    missing=features.iloc[eligible].isna().mean(); keep=missing[missing<=max_missing].index.tolist()
+    if not keep: raise ValueError("All features were removed using development-only missingness")
+    return features[keep],metadata[metadata.name.isin(keep)].copy(),warmup

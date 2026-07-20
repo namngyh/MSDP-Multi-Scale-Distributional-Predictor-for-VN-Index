@@ -1,21 +1,64 @@
+"""Conformalized quantile regression for dependent financial series.
+
+Coverage is empirical; this module does not claim an iid finite-sample guarantee.
+"""
 from __future__ import annotations
+from dataclasses import dataclass
 import numpy as np
 
+def conformity_scores(lower, upper, y) -> np.ndarray:
+    lower, upper, y = map(lambda z: np.asarray(z, dtype=float), (lower, upper, y))
+    return np.maximum.reduce([lower-y, y-upper, np.zeros_like(y, dtype=float)])
+
+def finite_sample_qhat(scores, alpha: float) -> np.ndarray:
+    scores=np.asarray(scores,float)
+    if scores.ndim==1: scores=scores[:,None]
+    n=scores.shape[0]
+    if n==0: raise ValueError("Calibration set is empty")
+    rank=int(np.clip(np.ceil((n+1)*(1-alpha)),1,n))-1
+    return np.sort(scores,axis=0)[rank].clip(min=0)
+
 class StaticCQRCalibrator:
-    def __init__(self,alpha=.1): self.alpha=alpha
-    def fit(self,lower,upper,y):
-        s=np.maximum(lower-y,y-upper); n=len(s); level=min(1,np.ceil((n+1)*(1-self.alpha))/n); self.q=np.quantile(s,level,axis=0,method="higher"); return self
-    def transform(self,lower,upper): return lower-self.q,upper+self.q
+    def __init__(self,alpha=.1): self.alpha=float(alpha); self.qhat=None; self.metadata={}
+    @property
+    def q(self): return self.qhat
+    def fit(self,lower,upper,y,dates=None):
+        scores=conformity_scores(lower,upper,y); self.qhat=finite_sample_qhat(scores,self.alpha)
+        raw=np.mean((np.asarray(y)>=lower)&(np.asarray(y)<=upper),axis=0)
+        lo,hi=self.transform(lower,upper); calibrated=np.mean((np.asarray(y)>=lo)&(np.asarray(y)<=hi),axis=0)
+        self.metadata={"method":"static_cqr","alpha":self.alpha,"target_coverage":1-self.alpha,"sample_count":len(scores),"qhat":self.qhat.tolist(),"raw_coverage":np.asarray(raw).tolist(),"calibrated_coverage":np.asarray(calibrated).tolist(),"calibration_date_range":None if dates is None else [str(dates[0]),str(dates[-1])]}
+        return self
+    def transform(self,lower,upper):
+        if self.qhat is None: raise RuntimeError("Calibrator has not been fitted")
+        return np.asarray(lower)-self.qhat,np.asarray(upper)+self.qhat
+    def state_dict(self): return {"alpha":self.alpha,"qhat":self.qhat.tolist(),"metadata":self.metadata}
+    @classmethod
+    def from_state_dict(cls,state):
+        obj=cls(state["alpha"]); obj.qhat=np.asarray(state["qhat"]); obj.metadata=state.get("metadata",{}); return obj
 
 class RollingCQRCalibrator:
-    def __init__(self,window=252,alpha=.1): self.window=window; self.alpha=alpha; self.history=[]
-    def seed(self,lower,upper,y): self.history=list(np.maximum(lower-y,y-upper)[-self.window:]); return self
-    def predict(self,lower,upper):
-        q=np.quantile(np.asarray(self.history),1-self.alpha,axis=0) if self.history else np.zeros_like(lower); return lower-q,upper+q
-    def update(self,lower,upper,y): self.history.append(np.maximum(lower-y,y-upper)); self.history=self.history[-self.window:]
+    """Online CQR whose test residual enters history only after its horizon matures."""
+    def __init__(self,window=252,alpha=.1,horizons=(5,20,60)):
+        self.window=int(window); self.alpha=float(alpha); self.horizons=np.asarray(horizons,int); self.history=[]; self.pending=[]; self.current_time=-1
+    def seed(self,lower,upper,y): self.history=list(conformity_scores(lower,upper,y)[-self.window:]); return self
+    def _mature(self,current_time):
+        ready=[item for item in self.pending if item[0]<=current_time]
+        self.pending=[item for item in self.pending if item[0]>current_time]
+        for _,h,score in ready:
+            if not self.history: self.history=[np.zeros(len(self.horizons))]
+            row=np.asarray(self.history[-1]).copy(); row[h]=score; self.history.append(row)
+        self.history=self.history[-self.window:]; self.current_time=current_time
+    def predict(self,lower,upper,current_time=None):
+        if current_time is not None: self._mature(current_time)
+        q=finite_sample_qhat(np.asarray(self.history),self.alpha) if self.history else np.zeros_like(lower,dtype=float)
+        return np.asarray(lower)-q,np.asarray(upper)+q
+    def update(self,lower,upper,y,forecast_time=None):
+        scores=conformity_scores(lower,upper,y)
+        if forecast_time is None: self.history.extend(np.atleast_2d(scores)); self.history=self.history[-self.window:]; return
+        for h,score in enumerate(np.ravel(scores)): self.pending.append((int(forecast_time+self.horizons[h]),h,float(score)))
 
 class AdaptiveConformalCalibrator(RollingCQRCalibrator):
-    def __init__(self,window=252,alpha=.1,gamma=.01): super().__init__(window,alpha); self.target=alpha; self.gamma=gamma
-    def update(self,lower,upper,y):
-        miss=np.asarray((y<lower)|(y>upper),float).mean(); self.alpha=float(np.clip(self.alpha+self.gamma*(self.target-miss),.01,.5)); super().update(lower,upper,y)
+    def __init__(self,window=252,alpha=.1,gamma=.01,horizons=(5,20,60)): super().__init__(window,alpha,horizons); self.target=alpha; self.gamma=gamma
+    def update(self,lower,upper,y,forecast_time=None):
+        miss=np.asarray((y<lower)|(y>upper),float).mean(); self.alpha=float(np.clip(self.alpha+self.gamma*(self.target-miss),.01,.5)); super().update(lower,upper,y,forecast_time)
 

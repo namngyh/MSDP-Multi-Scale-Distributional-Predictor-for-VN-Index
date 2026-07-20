@@ -5,22 +5,32 @@ import torch
 from torch.utils.data import DataLoader
 from ..losses import multitask_loss
 
-def train_model(model,train_ds,val_ds,cfg,device="cpu"):
-    model.to(device); tc=cfg["training"]; opt=torch.optim.AdamW(model.parameters(),lr=tc["learning_rate"],weight_decay=tc["weight_decay"])
-    train=DataLoader(train_ds,batch_size=tc["batch_size"],shuffle=True); val=DataLoader(val_ds,batch_size=tc["batch_size"],shuffle=False)
+def train_model(model,train_ds,val_ds,cfg,device="cpu",trial=None):
+    model.to(device); tc=cfg["training"]; opt=torch.optim.AdamW(model.parameters(),lr=tc["learning_rate"],weight_decay=tc["weight_decay"]); scheduler=torch.optim.lr_scheduler.ReduceLROnPlateau(opt,patience=max(1,tc["patience"]//3),factor=.5)
+    train=DataLoader(train_ds,batch_size=tc["batch_size"],shuffle=True,num_workers=tc.get("num_workers",0)); val=DataLoader(val_ds,batch_size=tc["batch_size"],shuffle=False,num_workers=tc.get("num_workers",0))
+    if not len(train) or not len(val): raise ValueError("Empty train or validation dataset after warm-up/purge")
     best=float("inf"); state=None; patience=0; history=[]
     for epoch in range(tc["epochs"]):
-        model.train(); tl=[]
+        record={"epoch":epoch+1,"learning_rate":opt.param_groups[0]["lr"]}; model.train(); train_parts={}
         for x,y,_ in train:
-            x=x.to(device); y=y.to(device); opt.zero_grad(); out=model(x); loss,_=multitask_loss(out,y,cfg["horizons"],cfg["quantiles"],cfg["mdd_quantiles"],cfg["loss_weights"]); loss.backward(); torch.nn.utils.clip_grad_norm_(model.parameters(),1); opt.step(); tl.append(loss.item())
-        model.eval(); vl=[]
+            x=x.to(device); y=y.to(device); opt.zero_grad(); total,parts=multitask_loss(model(x),y,cfg["horizons"],cfg["quantiles"],cfg["mdd_quantiles"],cfg["loss_weights"])
+            if not torch.isfinite(total): raise FloatingPointError(f"Non-finite training loss at epoch {epoch+1}")
+            total.backward(); torch.nn.utils.clip_grad_norm_(model.parameters(),1.); opt.step()
+            for k,v in {"total":total,**parts}.items(): train_parts.setdefault(k,[]).append(float(v.detach()))
+        model.eval(); vals=[]
         with torch.no_grad():
             for x,y,_ in val:
-                loss,_=multitask_loss(model(x.to(device)),y.to(device),cfg["horizons"],cfg["quantiles"],cfg["mdd_quantiles"],cfg["loss_weights"]); vl.append(loss.item())
-        score=float(np.mean(vl)); history.append({"epoch":epoch+1,"train_loss":float(np.mean(tl)),"validation_loss":score})
+                total,_=multitask_loss(model(x.to(device)),y.to(device),cfg["horizons"],cfg["quantiles"],cfg["mdd_quantiles"],cfg["loss_weights"])
+                if not torch.isfinite(total): raise FloatingPointError(f"Non-finite validation loss at epoch {epoch+1}")
+                vals.append(float(total))
+        score=float(np.mean(vals)); scheduler.step(score); record.update({f"train_{k}":float(np.mean(v)) for k,v in train_parts.items()}); record["validation_total"]=score; history.append(record)
+        if trial is not None: trial.report(score,epoch); 
+        if trial is not None and trial.should_prune():
+            import optuna; raise optuna.TrialPruned()
         if score<best: best=score; state=copy.deepcopy(model.state_dict()); patience=0
         else: patience+=1
         if patience>=tc["patience"]: break
+    if state is None: raise RuntimeError("Training produced no finite checkpoint")
     model.load_state_dict(state); return model,history
 
 def predict(model,ds,batch_size=256,device="cpu"):
@@ -29,6 +39,6 @@ def predict(model,ds,batch_size=256,device="cpu"):
         for x,_,ix in DataLoader(ds,batch_size=batch_size,shuffle=False):
             out=model(x.to(device)); indices.extend(ix.numpy().tolist())
             for k,v in out.items():
-                if k!="expert_latents": bags.setdefault(k,[]).append(v.cpu().numpy())
+                if k not in {"expert_latents","context","direction_logits"}: bags.setdefault(k,[]).append(v.cpu().numpy())
+    if not indices: raise ValueError("Prediction dataset is empty")
     return {k:np.concatenate(v) for k,v in bags.items()},np.asarray(indices)
-

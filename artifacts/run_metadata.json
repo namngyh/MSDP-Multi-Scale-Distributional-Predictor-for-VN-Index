@@ -5,7 +5,7 @@
   "torch": "2.13.0+cpu",
   "cuda": false,
   "seed": 42,
-  "git_commit": null,
+  "git_commit": "a07cd942762746cacc0f5c3433fb0cd98f1202d3",
   "data_sha256": "b9223de5500676ccd64fdb29edc27bf2c28bc04f424397dd3058e674737ea379",
   "date_range": [
     "2000-07-28",
@@ -58,21 +58,30 @@
       "long_pool": 10
     },
     "training": {
-      "epochs": 3,
-      "patience": 2,
+      "epochs": 15,
+      "tuning_epochs": 4,
+      "patience": 3,
       "batch_size": 128,
       "learning_rate": 0.001,
       "weight_decay": 1e-05,
       "folds": 1,
-      "trials": 1
+      "trials": 3,
+      "num_workers": 0
     },
     "loss_weights": {
       "return": 1.0,
       "direction": 0.25,
-      "mdd": 0.25,
-      "volatility": 0.2,
-      "gate_entropy": 0.001
+      "mdd": 0.35,
+      "volatility": 0.15,
+      "balance": 0.01,
+      "aux": 0.05,
+      "entropy": 0.0
     },
-    "bootstrap_resamples": 50
+    "bootstrap_resamples": 50,
+    "ablations": [
+      "equal",
+      "single"
+    ],
+    "run_label": "quick"
   }
 }
