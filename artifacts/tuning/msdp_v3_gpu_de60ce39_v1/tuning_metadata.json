@@ -1,0 +1,55 @@
+{
+  "study_name": "msdp_v3_gpu_de60ce39_v1",
+  "model_version": "v3",
+  "feature_version": "v1",
+  "git_commit": "d3da0c72b31502dc49f13c77cc553e69dc1ba09f",
+  "data_hash": "de60ce39646402eaa7dba3b68390fa807a6efe2866a1ddf70c0ff603b9e2873f",
+  "config": "gpu",
+  "seed": 42,
+  "runtime_seconds": 5801.3291182518005,
+  "trial_counts": {
+    "running": 0,
+    "complete": 50,
+    "pruned": 0,
+    "fail": 0,
+    "waiting": 0
+  },
+  "fold_definitions": [
+    {
+      "fold": 0,
+      "train_start": 0,
+      "train_end": 2800,
+      "validation_start": 2861,
+      "validation_end": 3112,
+      "purge_gap": 60
+    },
+    {
+      "fold": 1,
+      "train_start": 0,
+      "train_end": 3052,
+      "validation_start": 3113,
+      "validation_end": 3364,
+      "purge_gap": 60
+    },
+    {
+      "fold": 2,
+      "train_start": 0,
+      "train_end": 3304,
+      "validation_start": 3365,
+      "validation_end": 3616,
+      "purge_gap": 60
+    },
+    {
+      "fold": 3,
+      "train_start": 0,
+      "train_end": 3556,
+      "validation_start": 3617,
+      "validation_end": 3868,
+      "purge_gap": 60
+    }
+  ],
+  "python": "3.13.14",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "created_at": "2026-07-22T10:22:57.274297+00:00",
+  "storage": "C:\\Users\\Admin\\Desktop\\nam\\MSDP-Multi-Scale-Distributional-Predictor-for-VN-Index\\artifacts\\tuning\\msdp_optuna.db"
+}

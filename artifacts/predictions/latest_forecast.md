@@ -2,64 +2,60 @@
 
 ```json
 {
-  "run_id": "20260720_161451_quick",
+  "run_id": "20260722_154609_gpu",
   "artifact_role": "production",
   "data_date": "2026-07-13 00:00:00",
   "current_vnindex": 1800.54,
+  "note": "Hồ sơ dự báo theo khoảng thời gian; độ tin cậy không phải xác suất dự báo đúng",
   "horizons": [
     {
       "horizon": 5,
-      "probability_positive": 0.3448234498500824,
+      "probability_positive": 0.518169105052948,
       "return_quantiles": [
-        -6.61337947845459,
-        -2.90559983253479,
-        -1.373356580734253,
-        -0.006609098985791206,
-        2.621887445449829
+        -5.520383358001709,
+        -1.8820565938949585,
+        -0.49920010566711426,
+        1.1751314401626587,
+        3.6174657344818115
       ],
       "raw_interval": [
-        -6.61337947845459,
-        2.621887445449829
+        -5.520383358001709,
+        3.6174657344818115
       ],
       "calibrated_interval": [
-        -8.03558664346095,
-        4.04409461045619
-      ],
-      "projected_index_quantiles": [
-        1685.3155092430115,
-        1775.981302603483,
-        1848.3723385620117
+        -5.931746248452318,
+        4.02882862493242
       ],
       "mdd_quantiles": [
-        -5.145776748657227,
-        -1.845352053642273,
-        -0.43549954891204834
+        -4.486928462982178,
+        -1.23317551612854,
+        -0.3154729902744293
       ],
-      "volatility": 16.59625816345215,
+      "volatility": 14.47845458984375,
       "expert_weights": [
-        0.2996966242790222,
-        0.2785843312740326,
-        0.19240760803222656,
-        0.22931145131587982
+        0.2544335424900055,
+        0.2541098892688751,
+        0.24690718948841095,
+        0.24454934895038605
       ],
-      "expert_disagreement": 0.25106874108314514,
-      "seed_dispersion_return": 0.0,
-      "seed_dispersion_direction": 0.0,
-      "seed_dispersion_mdd": 0.0,
-      "seed_dispersion_volatility": 0.0,
-      "confidence_score": 49.87740151605614,
+      "expert_disagreement": 0.062356945127248764,
+      "seed_dispersion_return": 0.6056423783302307,
+      "seed_dispersion_direction": 0.06480712443590164,
+      "seed_dispersion_mdd": 0.17090018093585968,
+      "seed_dispersion_volatility": 1.1692286729812622,
+      "confidence_score": 62.0185354123167,
       "confidence_label": "Trung bình",
       "confidence_components": {
-        "interval": 0.9987937273823885,
+        "interval": 0.5223160434258143,
         "coverage": 0.005428226779252143,
-        "disagreement": 0.27141133896260555,
-        "seed": 0.5,
+        "disagreement": 0.17370325693606756,
+        "seed": 0.7738238841978287,
         "drift": 0.4747996898423365
       },
       "confidence_component_sources": {
         "interval": "calibration interval-width percentile",
-        "coverage": "calibration coverage",
-        "disagreement": "calibration auxiliary disagreement percentile",
+        "coverage": "calibration coverage (rolling history unavailable)",
+        "disagreement": "calibration auxiliary-forecast disagreement percentile",
         "seed": "calibration seed-dispersion percentiles",
         "drift": "development robust-distance percentile"
       },
@@ -74,57 +70,52 @@
     },
     {
       "horizon": 20,
-      "probability_positive": 0.32647064328193665,
+      "probability_positive": 0.527008593082428,
       "return_quantiles": [
-        -13.38364028930664,
-        -6.961824417114258,
-        -3.379488945007324,
-        -0.7872477173805237,
-        4.08059549331665
+        -10.808524131774902,
+        -3.9644734859466553,
+        -0.9633484482765198,
+        2.7699835300445557,
+        8.60811710357666
       ],
       "raw_interval": [
-        -13.38364028930664,
-        4.08059549331665
+        -10.808524131774902,
+        8.60811710357666
       ],
       "calibrated_interval": [
-        -16.713911167403513,
-        7.410866371413523
-      ],
-      "projected_index_quantiles": [
-        1574.992025910616,
-        1740.7077217841147,
-        1875.5323786997794
+        -11.876747815051836,
+        9.676340786853594
       ],
       "mdd_quantiles": [
-        -12.275627136230469,
-        -5.716170787811279,
-        -1.7239363193511963
+        -10.641020774841309,
+        -3.964209794998169,
+        -1.274548888206482
       ],
-      "volatility": 18.024948120117188,
+      "volatility": 16.4031925201416,
       "expert_weights": [
-        0.24535642564296722,
-        0.306769996881485,
-        0.19536510109901428,
-        0.25250840187072754
+        0.24184612929821014,
+        0.24454717338085175,
+        0.2494492083787918,
+        0.2641575038433075
       ],
-      "expert_disagreement": 1.3197141885757446,
-      "seed_dispersion_return": 0.0,
-      "seed_dispersion_direction": 0.0,
-      "seed_dispersion_mdd": 0.0,
-      "seed_dispersion_volatility": 0.0,
-      "confidence_score": 48.51431345815506,
+      "expert_disagreement": 0.2189158797264099,
+      "seed_dispersion_return": 1.397296667098999,
+      "seed_dispersion_direction": 0.06529323011636734,
+      "seed_dispersion_mdd": 0.3864552974700928,
+      "seed_dispersion_volatility": 1.2105305194854736,
+      "confidence_score": 67.27034482124313,
       "confidence_label": "Trung bình",
       "confidence_components": {
-        "interval": 0.971049457177322,
+        "interval": 0.503015681544029,
         "coverage": 0.005428226779252143,
-        "disagreement": 0.38118214716525933,
-        "seed": 0.5,
+        "disagreement": 0.018094089264173704,
+        "seed": 0.6697828709288298,
         "drift": 0.4747996898423365
       },
       "confidence_component_sources": {
         "interval": "calibration interval-width percentile",
-        "coverage": "calibration coverage",
-        "disagreement": "calibration auxiliary disagreement percentile",
+        "coverage": "calibration coverage (rolling history unavailable)",
+        "disagreement": "calibration auxiliary-forecast disagreement percentile",
         "seed": "calibration seed-dispersion percentiles",
         "drift": "development robust-distance percentile"
       },
@@ -139,57 +130,52 @@
     },
     {
       "horizon": 60,
-      "probability_positive": 0.3663197159767151,
+      "probability_positive": 0.5472291707992554,
       "return_quantiles": [
-        -23.256181716918945,
-        -12.057695388793945,
-        -5.976162910461426,
-        -0.9951068162918091,
-        8.244776725769043
+        -19.9241886138916,
+        -7.0055999755859375,
+        -1.5639313459396362,
+        5.731710910797119,
+        17.478330612182617
       ],
       "raw_interval": [
-        -23.256181716918945,
-        8.244776725769043
+        -19.9241886138916,
+        17.478330612182617
       ],
       "calibrated_interval": [
-        -29.01288423380051,
-        14.001479242650607
-      ],
-      "projected_index_quantiles": [
-        1426.9292721891402,
-        1696.0889896845817,
-        1955.2818479704856
+        -21.185139556503337,
+        18.739281554794353
       ],
       "mdd_quantiles": [
-        -20.86812400817871,
-        -11.830399513244629,
-        -3.94492506980896
+        -18.017385482788086,
+        -8.765674591064453,
+        -3.390629529953003
       ],
-      "volatility": 19.487651824951172,
+      "volatility": 18.071929931640625,
       "expert_weights": [
-        0.2349647879600525,
-        0.16418831050395966,
-        0.3080541491508484,
-        0.29279276728630066
+        0.22229059040546417,
+        0.20085667073726654,
+        0.27784156799316406,
+        0.2990112006664276
       ],
-      "expert_disagreement": 2.570711612701416,
-      "seed_dispersion_return": 0.0,
-      "seed_dispersion_direction": 0.0,
-      "seed_dispersion_mdd": 0.0,
-      "seed_dispersion_volatility": 0.0,
-      "confidence_score": 47.45279355465687,
+      "expert_disagreement": 0.6753698587417603,
+      "seed_dispersion_return": 2.7139978408813477,
+      "seed_dispersion_direction": 0.05087043717503548,
+      "seed_dispersion_mdd": 0.9450982213020325,
+      "seed_dispersion_volatility": 0.856613278388977,
+      "confidence_score": 66.7260143025459,
       "confidence_label": "Trung bình",
       "confidence_components": {
-        "interval": 0.9034981905910736,
+        "interval": 0.5693606755126659,
         "coverage": 0.005428226779252143,
-        "disagreement": 0.5355850422195416,
-        "seed": 0.5,
+        "disagreement": 0.08805790108564536,
+        "seed": 0.48009650180940894,
         "drift": 0.4747996898423365
       },
       "confidence_component_sources": {
         "interval": "calibration interval-width percentile",
-        "coverage": "calibration coverage",
-        "disagreement": "calibration auxiliary disagreement percentile",
+        "coverage": "calibration coverage (rolling history unavailable)",
+        "disagreement": "calibration auxiliary-forecast disagreement percentile",
         "seed": "calibration seed-dispersion percentiles",
         "drift": "development robust-distance percentile"
       },
@@ -202,6 +188,12 @@
         "drift"
       ]
     }
+  ],
+  "interpretation": [
+    "Dự báo 5 phiên chịu ảnh hưởng lớn nhất từ chuyên gia ngắn hạn.",
+    "Dự báo 20 phiên chịu ảnh hưởng lớn nhất từ chuyên gia biên độ–biến động.",
+    "Dự báo 60 phiên chịu ảnh hưởng lớn nhất từ chuyên gia biên độ–biến động.",
+    "Kịch bản bất lợi chứa mức sụt giảm đáng kể."
   ]
 }
 ```

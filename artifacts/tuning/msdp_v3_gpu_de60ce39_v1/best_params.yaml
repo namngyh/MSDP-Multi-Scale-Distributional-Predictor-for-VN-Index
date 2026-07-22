@@ -1,0 +1,16 @@
+hidden_dim: 128
+latent_dim: 64
+n_blocks: 4
+dropout: 0.11517540839828096
+gate_temperature: 1.229635137393252
+medium_pool: 3
+long_pool: 10
+learning_rate: 0.0034737820547757017
+weight_decay: 0.0003355719254184501
+batch_size: 96
+gradient_clip: 1.0
+lambda_direction: 0.15
+lambda_mdd: 0.35
+lambda_volatility: 0.2
+lambda_aux: 0.05
+lambda_balance: 0.02
